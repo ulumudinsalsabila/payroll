@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PayrollPeriodController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PayslipComponentController;
+use App\Http\Controllers\TerRateController;
+use App\Http\Controllers\ActivityLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,7 +31,10 @@ Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected HRD area
-Route::middleware(['auth', 'role:HRD'])->group(function () {
+Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::resource('payroll-periods', PayrollPeriodController::class);
     Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
+    Route::resource('payslip-components', PayslipComponentController::class);
+    Route::resource('ter-rates', TerRateController::class);
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
 });

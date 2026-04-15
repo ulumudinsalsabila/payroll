@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Employee;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -43,7 +44,19 @@ class EmployeeController extends Controller
         $data['leave_balance'] = $data['leave_balance'] ?? 0;
         $data['employee_code'] = $this->generateEmployeeCode();
 
-        Employee::create($data);
+        $employee = Employee::create($data);
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'CREATE',
+            'module' => 'EMPLOYEE',
+            'target_id' => $employee->id,
+            'description' => 'Menambahkan karyawan',
+            'old_values' => null,
+            'new_values' => $employee->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil ditambahkan.');
     }
@@ -51,6 +64,7 @@ class EmployeeController extends Controller
     public function update(Request $request, string $id)
     {
         $employee = Employee::findOrFail($id);
+        $before = $employee->toArray();
         $data = $request->validate([
             'name' => ['required','string','max:255'],
             'position' => ['required','string','max:255'],
@@ -66,6 +80,19 @@ class EmployeeController extends Controller
         $data['leave_balance'] = $data['leave_balance'] ?? 0;
 
         $employee->update($data);
+        $employee->refresh();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'UPDATE',
+            'module' => 'EMPLOYEE',
+            'target_id' => $employee->id,
+            'description' => 'Memperbarui karyawan',
+            'old_values' => $before,
+            'new_values' => $employee->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
 
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil diperbarui.');
     }
@@ -73,7 +100,20 @@ class EmployeeController extends Controller
     public function destroy(string $id)
     {
         $employee = Employee::findOrFail($id);
+        $before = $employee->toArray();
         $employee->delete();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'DELETE',
+            'module' => 'EMPLOYEE',
+            'target_id' => $id,
+            'description' => 'Menghapus karyawan',
+            'old_values' => $before,
+            'new_values' => null,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
         return redirect()->route('employees.index')->with('success', 'Karyawan berhasil dihapus.');
     }
 

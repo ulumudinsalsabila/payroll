@@ -10,30 +10,66 @@
     </button>
 </div>
 
-@if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
+@if (session('success'))
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ session('success') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
 @endif
+@if (session('error'))
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ session('error') }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+@endif
+@if ($errors->any())
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <ul class="mb-0">
+      @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+@endif
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(function () {
+      document.querySelectorAll('.alert.alert-dismissible').forEach(function (el) {
+        try {
+          bootstrap.Alert.getOrCreateInstance(el).close();
+        } catch (e) {
+          el.remove();
+        }
+      });
+    }, 3000);
+  });
+  </script>
+@endpush
 
 <div class="card">
     <div class="card-body table-responsive">
         <table class="table align-middle table-row-dashed fs-6 gy-5" id="periods_table">
             <thead class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                 <tr>
-                    <th>Bulan</th>
                     <th>Tahun</th>
+                    <th>Bulan</th>
                     <th>Deskripsi</th>
                     <th>Status</th>
                     <th class="text-end">Aksi</th>
                 </tr>
             </thead>
             <tbody>
+                @php($__bulan = ['01'=>'Januari','02'=>'Februari','03'=>'Maret','04'=>'April','05'=>'Mei','06'=>'Juni','07'=>'Juli','08'=>'Agustus','09'=>'September','10'=>'Oktober','11'=>'November','12'=>'Desember'])
                 @foreach($periods as $p)
                 <tr data-id="{{ $p->id }}"
                     data-month="{{ $p->month }}"
                     data-year="{{ $p->year }}"
                     data-description="{{ $p->description }}">
-                    <td>{{ $p->month }}</td>
-                    <td>{{ $p->year }}</td>
+                    <td data-order="{{ $p->year }}">{{ $p->year }}</td>
+                    <td data-order="{{ $p->month }}">{{ $__bulan[$p->month] ?? $p->month }}</td>
                     <td>{{ $p->description }}</td>
                     <td><span class="badge bg-light-{{ $p->status === 'draft' ? 'warning' : 'success' }} text-{{ $p->status === 'draft' ? 'warning' : 'success' }}">{{ $p->status }}</span></td>
                     <td class="text-end">
@@ -67,11 +103,30 @@
         <div class="modal-body">
           <div class="mb-3">
             <label class="form-label">Bulan</label>
-            <input type="text" name="month" id="month" class="form-control" maxlength="2" required>
+            <select name="month" id="month" class="form-select" required>
+              <option value="">- Pilih -</option>
+              <option value="01">Januari</option>
+              <option value="02">Februari</option>
+              <option value="03">Maret</option>
+              <option value="04">April</option>
+              <option value="05">Mei</option>
+              <option value="06">Juni</option>
+              <option value="07">Juli</option>
+              <option value="08">Agustus</option>
+              <option value="09">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">Desember</option>
+            </select>
           </div>
           <div class="mb-3">
             <label class="form-label">Tahun</label>
-            <input type="text" name="year" id="year" class="form-control" maxlength="4" required>
+            <select name="year" id="year" class="form-select" required>
+              <option value="">- Pilih -</option>
+              @for ($y = (int) date('Y') - 5; $y <= (int) date('Y') + 1; $y++)
+                <option value="{{ $y }}">{{ $y }}</option>
+              @endfor
+            </select>
           </div>
           <div class="mb-3">
             <label class="form-label">Deskripsi</label>
@@ -117,7 +172,17 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-  const dt = $('#periods_table').DataTable({ pageLength: 10, ordering: true });
+  const dt = $('#periods_table').DataTable({
+    pageLength: 10,
+    ordering: true,
+    order: [[0, 'desc'], [1, 'desc']] // Tahun desc, Bulan desc
+  });
+
+  const monthNames = {
+    '01': 'Januari', '02': 'Februari', '03': 'Maret', '04': 'April',
+    '05': 'Mei', '06': 'Juni', '07': 'Juli', '08': 'Agustus',
+    '09': 'September', '10': 'Oktober', '11': 'November', '12': 'Desember'
+  };
 
   function toEditMode(row) {
     const id = row.data('id');
@@ -141,8 +206,11 @@ $(document).ready(function() {
     document.getElementById('periodFormMethod').value = 'POST';
     document.getElementById('periodModalTitle').textContent = 'Tambah Periode';
     $('#period_id').val('');
-    $('#month').val('');
-    $('#year').val('');
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const yy = String(now.getFullYear());
+    $('#month').val(mm);
+    $('#year').val(yy);
     $('#description').val('');
   });
 
@@ -154,7 +222,8 @@ $(document).ready(function() {
   $('#periods_table').on('click', '.btnDeletePeriod', function(){
     const row = $(this).closest('tr');
     const id = row.data('id');
-    const label = row.data('month') + '/' + row.data('year');
+    const mm = row.data('month');
+    const label = (monthNames[mm] || mm) + ' ' + row.data('year');
     $('#delete_name').text(label);
     const form = document.getElementById('deleteForm');
     form.action = `{{ url('payroll-periods') }}/${id}`;

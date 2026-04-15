@@ -25,10 +25,10 @@
                             <a class="menu-link {{ request()->routeIs('employees.*') ? 'active' : '' }}" href="{{ route('employees.index') }}"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Data Karyawan</span></a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Komponen Gaji</span></a>
+                            <a class="menu-link {{ request()->routeIs('payslip-components.*') ? 'active' : '' }}" href="{{ route('payslip-components.index') }}"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Komponen Gaji</span></a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Referensi Tarif TER</span></a>
+                            <a class="menu-link {{ request()->routeIs('ter-rates.*') ? 'active' : '' }}" href="{{ route('ter-rates.index') }}"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Referensi Tarif TER</span></a>
                         </div>
                     </div>
                 </div>
@@ -57,7 +57,7 @@
                     </span>
                     <div class="menu-sub menu-sub-accordion">
                         <div class="menu-item">
-                            <a class="menu-link" href="#"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Activity Logs</span></a>
+                            <a class="menu-link {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}" href="{{ route('activity-logs.index') }}"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Activity Logs</span></a>
                         </div>
                     </div>
                 </div>

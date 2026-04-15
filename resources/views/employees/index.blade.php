@@ -36,6 +36,37 @@
     </div>
 @endif
 
+@php
+    $departments = $employees->pluck('department')->filter()->unique()->sort()->values();
+    $positions = $employees->pluck('position')->filter()->unique()->sort()->values();
+@endphp
+
+<div class="d-flex flex-wrap gap-3 mb-4">
+    <div class="w-auto">
+        <label class="form-label mb-1">Cari Kode/Nama</label>
+        <input type="text" id="search_emp" class="form-control form-control-sm" placeholder="Ketik kode atau nama..." style="min-width: 240px;">
+    </div>
+    <div class="w-auto">
+        <label class="form-label mb-1">Filter Departemen</label>
+        <select id="filter_department" class="form-select form-select-sm" style="min-width: 200px;">
+            <option value="">Semua</option>
+            @foreach($departments as $d)
+                <option value="{{ $d }}">{{ $d }}</option>
+            @endforeach
+        </select>
+    </div>
+    <div class="w-auto">
+        <label class="form-label mb-1">Filter Posisi</label>
+        <select id="filter_position" class="form-select form-select-sm" style="min-width: 200px;">
+            <option value="">Semua</option>
+            @foreach($positions as $p)
+                <option value="{{ $p }}">{{ $p }}</option>
+            @endforeach
+        </select>
+    </div>
+    
+</div>
+
 <div class="card">
     <div class="card-body table-responsive">
         <table class="table align-middle table-row-dashed fs-6 gy-5" id="employees_table">
@@ -210,6 +241,33 @@ $(document).ready(function() {
       } catch (e) {}
     });
   }, 3000);
+
+  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+  // Global search for kode/nama
+  $('#search_emp').on('keyup change', function(){
+    dt.search(this.value).draw();
+  });
+
+  // Filter Department (kolom 3)
+  $('#filter_department').on('change', function(){
+    const v = this.value;
+    if (v) {
+      dt.column(3).search('^' + escRe(v) + '$', true, false).draw();
+    } else {
+      dt.column(3).search('').draw();
+    }
+  });
+
+  // Filter Posisi (kolom 2)
+  $('#filter_position').on('change', function(){
+    const v = this.value;
+    if (v) {
+      dt.column(2).search('^' + escRe(v) + '$', true, false).draw();
+    } else {
+      dt.column(2).search('').draw();
+    }
+  });
 
   function toEditMode(row) {
     const id = row.data('id');
