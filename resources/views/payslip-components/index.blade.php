@@ -42,6 +42,7 @@
                 <tr>
                     <th>Nama Komponen</th>
                     <th>Tipe</th>
+                    <th>Persentase (%)</th>
                     <th>Status</th>
                     <th class="text-end">Aksi</th>
                 </tr>
@@ -52,6 +53,8 @@
                   data-id="{{ $c->id }}"
                   data-name="{{ $c->name }}"
                   data-type="{{ $c->type }}"
+                  data-percentage="{{ $c->type === 'deduction' ? $c->percentage : '' }}"
+                  data-max_cap="{{ $c->type === 'deduction' ? $c->max_cap : '' }}"
                   data-is_active="{{ $c->is_active ? '1' : '0' }}"
                 >
                     <td>{{ $c->name }}</td>
@@ -65,6 +68,9 @@
                             [$label,$cls] = $map[$c->type] ?? [$c->type,'secondary'];
                         @endphp
                         <span class="badge badge-light-{{ $cls }}">{{ $label }}</span>
+                    </td>
+                    <td>
+                        {{ $c->type === 'deduction' && $c->percentage !== null ? number_format((float) $c->percentage, 2, '.', '') : '-' }}
                     </td>
                     <td>
                         @if($c->is_active)
@@ -114,6 +120,15 @@
                 <option value="deduction">Potongan</option>
                 <option value="tax">Pajak</option>
               </select>
+            </div>
+            <div class="col-12">
+              <label class="form-label">Persentase (%)</label>
+              <input type="number" name="percentage" id="percentage" class="form-control" step="0.01" min="0" max="100">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Batas Maksimal Upah / Max Cap</label>
+              <input type="number" name="max_cap" id="max_cap" class="form-control" min="0">
+              <div class="form-text">Kosongkan jika tidak ada batas maksimal</div>
             </div>
             <div class="col-12">
               <div class="form-check form-switch">
@@ -209,15 +224,15 @@ $(document).ready(function() {
     }
   });
 
-  // Filter status (kolom 2)
+  // Filter status (kolom 3)
   $('#filter_component_status').on('change', function(){
     const v = this.value;
     if (v === '1') {
-      dt.column(2).search('^Aktif$', true, false).draw();
+      dt.column(3).search('^Aktif$', true, false).draw();
     } else if (v === '0') {
-      dt.column(2).search('^Non-aktif$', true, false).draw();
+      dt.column(3).search('^Non-aktif$', true, false).draw();
     } else {
-      dt.column(2).search('').draw();
+      dt.column(3).search('').draw();
     }
   });
 
@@ -226,7 +241,11 @@ $(document).ready(function() {
     $('#component_id').val(id);
     $('#name').val(row.data('name'));
     $('#type').val(row.data('type'));
+    $('#percentage').val(row.data('percentage'));
+    $('#max_cap').val(row.data('max_cap'));
     $('#is_active').prop('checked', row.data('is_active') == '1');
+
+    toggleCalcFields();
 
     const form = document.getElementById('componentForm');
     form.action = `{{ url('payslip-components') }}/${id}`;
@@ -246,7 +265,26 @@ $(document).ready(function() {
     $('#component_id').val('');
     $('#name').val('');
     $('#type').val('');
+    $('#percentage').val('');
+    $('#max_cap').val('');
     $('#is_active').prop('checked', true);
+
+    toggleCalcFields();
+  });
+
+  function toggleCalcFields() {
+    const t = $('#type').val();
+    const isDeduction = t === 'deduction';
+    $('#percentage').prop('disabled', !isDeduction).prop('required', isDeduction);
+    $('#max_cap').prop('disabled', !isDeduction);
+    if (!isDeduction) {
+      $('#percentage').val('');
+      $('#max_cap').val('');
+    }
+  }
+
+  $('#type').on('change', function(){
+    toggleCalcFields();
   });
 
   $('#components_table').on('click', '.btnEditComponent', function(){

@@ -10,12 +10,12 @@ class PayslipComponentSeeder extends Seeder
     public function run(): void
     {
         $components = [
-            ['name' => 'Gaji Pokok', 'type' => 'earning'],
-            ['name' => 'Lembur dan Bonus', 'type' => 'earning'],
-            ['name' => 'Jaminan Hari Tua', 'type' => 'deduction'],
-            ['name' => 'Jaminan Kecelakaan Kerja', 'type' => 'deduction'],
-            ['name' => 'Jaminan Kematian', 'type' => 'deduction'],
-            ['name' => 'PPh Pasal 21', 'type' => 'tax'],
+            ['name' => 'Gaji Pokok', 'type' => 'earning', 'percentage' => null, 'max_cap' => null],
+            ['name' => 'Lembur dan Bonus', 'type' => 'earning', 'percentage' => null, 'max_cap' => null],
+            ['name' => 'Jaminan Hari Tua', 'type' => 'deduction', 'percentage' => 5.70],
+            ['name' => 'Jaminan Kecelakaan Kerja', 'type' => 'deduction', 'percentage' => 0.54],
+            ['name' => 'Jaminan Kematian', 'type' => 'deduction', 'percentage' => 0.30],
+            ['name' => 'PPh Pasal 21', 'type' => 'tax', 'percentage' => null, 'max_cap' => null],
         ];
 
         foreach ($components as $comp) {

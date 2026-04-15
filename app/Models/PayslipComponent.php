@@ -17,11 +17,15 @@ class PayslipComponent extends Model
     protected $fillable = [
         'name', 
         'type', 
+        'percentage',
+        'max_cap',
         'is_active'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'percentage' => 'decimal:2',
+        'max_cap' => 'integer',
     ];
 
     public function details()

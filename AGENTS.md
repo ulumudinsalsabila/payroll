@@ -18,6 +18,7 @@ Target utama:
   - [1.2 Pola CRUD di UI: Modal Create/Edit + Konfirmasi Delete](#12-pola-crud-di-ui-modal-createedit--konfirmasi-delete)
   - [1.3 Pola Data Display: DataTables](#13-pola-data-display-datatables)
   - [1.4 Komponen UI Kustom / Kompleks](#14-komponen-ui-kustom--kompleks)
+  - [1.5 Pengecualian Pola CRUD Modal (Mass/Bulk Data Entry)](#15-pengecualian-pola-crud-modal-massbulk-data-entry)
 - [2) Penanganan JavaScript & AJAX](#2-penanganan-javascript--ajax)
   - [2.5 Tips Blade & JSON pada Atribut HTML](#25-tips-blade--json-pada-atribut-html)
 - [3) Notifikasi UI](#3-notifikasi-ui)
@@ -290,6 +291,11 @@ Filter pada log notifikasi memakai input native HTML5:
 ```
 
 ---
+
+## 1.5 Pengecualian Pola CRUD Modal (Mass/Bulk Data Entry)
+
+Aturan wajib menggunakan Modal untuk Create/Edit (Poin 1.2) HANYA berlaku mutlak untuk halaman Master Data (Data Karyawan, Komponen Gaji, Referensi, dll). 
+PENGECUALIAN DIBERIKAN untuk halaman Transaksi Massal (contoh: Input Payslip Bulanan). Untuk UX yang lebih efisien pada kasus Mass Data Entry, DIIZINKAN untuk menggunakan pendekatan 'Inline Editable Grid' langsung di dalam halaman utama (tanpa Modal) yang dibungkus dalam form massal, demi kecepatan input data ratusan baris sekaligus.
 
 # 2) PENANGANAN JAVASCRIPT & AJAX
 

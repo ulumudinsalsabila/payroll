@@ -32,6 +32,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected HRD area
 Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
+    Route::post('payroll-periods/calculate-row', [PayrollPeriodController::class, 'calculateRow'])->name('payroll-periods.calculate-row');
+    Route::post('payroll-periods/{payroll_period}/save-draft', [PayrollPeriodController::class, 'saveDraft'])->name('payroll-periods.save-draft');
     Route::resource('payroll-periods', PayrollPeriodController::class);
     Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
     Route::resource('payslip-components', PayslipComponentController::class);
