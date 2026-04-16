@@ -8,13 +8,19 @@ use App\Models\Employee;
 use App\Models\Payslip;
 use App\Models\PayslipComponent;
 use App\Models\PayslipDetail;
+use App\Services\PayrollService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class PayrollPeriodController extends Controller
 {
+    public function __construct(private readonly PayrollService $payrollService)
+    {
+    }
+
     public function index()
     {
         $periods = PayrollPeriod::orderByDesc('created_at')->get();
@@ -64,6 +70,11 @@ class PayrollPeriodController extends Controller
         $deductions = PayslipComponent::where('is_active', true)->where('type', 'deduction')->orderBy('name')->get();
         $taxes = PayslipComponent::where('is_active', true)->where('type', 'tax')->orderBy('name')->get();
 
+        $basicSalaryComponentId = PayslipComponent::where('is_active', true)
+            ->where('type', 'earning')
+            ->where('name', 'Gaji Pokok')
+            ->value('id');
+
         $draftWorkDays = [];
         $draftTax = [];
         $draftNetto = [];
@@ -79,49 +90,29 @@ class PayrollPeriodController extends Controller
             }
         }
 
-        return view('payroll-periods.show', compact('payrollPeriod', 'employees', 'earnings', 'deductions', 'taxes', 'draftWorkDays', 'draftTax', 'draftNetto', 'draftAmounts'));
+        return view('payroll-periods.show', compact('payrollPeriod', 'employees', 'earnings', 'deductions', 'taxes', 'draftWorkDays', 'draftTax', 'draftNetto', 'draftAmounts', 'basicSalaryComponentId'));
     }
 
     public function calculateRow(Request $request)
     {
         $validated = $request->validate([
-            'employee_id' => ['required', 'string', 'exists:employees,id'],
+            'employee_id' => ['required', 'string'],
             'earnings' => ['nullable', 'array'],
             'earnings.*' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        $earnings = $validated['earnings'] ?? [];
-        $totalEarnings = 0;
-        foreach ($earnings as $val) {
-            $totalEarnings += (int) round((float) $val);
+        try {
+            $result = $this->payrollService->calculateForEmployee(
+                $validated['employee_id'],
+                $validated['earnings'] ?? []
+            );
+
+            return response()->json($result);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Karyawan tidak ditemukan.',
+            ], 404);
         }
-
-        $deductionComponents = PayslipComponent::query()
-            ->where('is_active', true)
-            ->where('type', 'deduction')
-            ->orderBy('name')
-            ->get(['id', 'percentage', 'max_cap']);
-
-        $deductions = [];
-        foreach ($deductionComponents as $comp) {
-            $percentage = $comp->percentage === null ? 0.0 : (float) $comp->percentage;
-            $base = $totalEarnings;
-            if (!empty($comp->max_cap) && (int) $comp->max_cap > 0) {
-                $base = min($base, (int) $comp->max_cap);
-            }
-            $amount = (int) round($base * ($percentage / 100));
-            $deductions[$comp->id] = max($amount, 0);
-        }
-
-        $tax = 88608;
-        $totalDeductions = array_sum($deductions);
-        $netto = max($totalEarnings - $totalDeductions - $tax, 0);
-
-        return response()->json([
-            'deductions' => $deductions,
-            'tax' => $tax,
-            'netto' => $netto,
-        ]);
     }
 
     public function saveDraft(Request $request, string $payrollPeriod)

@@ -78,6 +78,11 @@
 <div class="card">
     <div class="card-header">
         <h3 class="card-title">Input Gaji Massal (Draft)</h3>
+        <div class="card-toolbar">
+            <button type="button" class="btn btn-warning btn-sm" id="btnFlexibleMode">
+                Flexible Mode: OFF
+            </button>
+        </div>
     </div>
     <form action="{{ route('payroll-periods.save-draft', $payrollPeriod->id) }}" method="POST">
         @csrf
@@ -114,7 +119,7 @@
 
                                 @foreach($deductions as $deduction)
                                     <td>
-                                        <input type="number" class="form-control form-control-sm bg-secondary readonly-deduction" name="payslips[{{ $employee->id }}][{{ $deduction->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $deduction->id, $draftAmounts[$employee->id][$deduction->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-component-id="{{ $deduction->id }}">
+                                        <input type="number" class="form-control form-control-sm bg-secondary readonly-deduction" name="payslips[{{ $employee->id }}][{{ $deduction->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $deduction->id, $draftAmounts[$employee->id][$deduction->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-component-id="{{ $deduction->id }}" data-component-name="{{ $deduction->name }}" data-percentage="{{ $deduction->percentage }}" data-max-cap="{{ $deduction->max_cap }}">
                                     </td>
                                 @endforeach
 
@@ -180,18 +185,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const CSRF_TOKEN = '{{ csrf_token() }}';
   const calcUrl = '{{ route('payroll-periods.calculate-row') }}';
+  const BASIC_SALARY_COMPONENT_ID = @json($basicSalaryComponentId ?? null);
 
-  function debounce(fn, wait) {
-    let t;
-    return function () {
-      const ctx = this;
-      const args = arguments;
-      clearTimeout(t);
-      t = setTimeout(function () {
-        fn.apply(ctx, args);
-      }, wait);
-    };
-  }
+  let flexibleMode = false;
+  const expectedByEmployee = {};
+
+  const calcTimers = {};
 
   function collectEarnings(employeeId) {
     const earnings = {};
@@ -202,21 +201,227 @@ document.addEventListener('DOMContentLoaded', function () {
     return earnings;
   }
 
-  function applyCalculation(employeeId, payload) {
+  function applyCalculation(employeeId, payload, options) {
+    const opts = options || {};
+    const respectExisting = !!opts.respectExisting;
+    const validateAll = !!opts.validateAll;
+
+    expectedByEmployee[employeeId] = payload || {};
+
     const d = payload && payload.deductions ? payload.deductions : {};
     Object.keys(d).forEach(function (componentId) {
       const el = document.querySelector('.readonly-deduction[data-employee-id="' + employeeId + '"][data-component-id="' + componentId + '"]');
-      if (el) el.value = d[componentId];
+      if (!el) return;
+      if (flexibleMode && el.getAttribute('data-manual') === '1') return;
+      if (respectExisting && el.value !== null && el.value !== '') return;
+      el.value = d[componentId];
     });
 
     const taxEl = document.querySelector('[data-field="tax"][data-employee-id="' + employeeId + '"]');
-    if (taxEl) taxEl.value = payload && payload.tax !== undefined ? payload.tax : '';
+    if (taxEl) {
+      if (!(flexibleMode && taxEl.getAttribute('data-manual') === '1')) {
+        if (!(respectExisting && taxEl.value !== null && taxEl.value !== '')) {
+          taxEl.value = payload && payload.tax !== undefined ? payload.tax : '';
+        }
+      }
+    }
 
     const nettoEl = document.querySelector('[data-field="netto"][data-employee-id="' + employeeId + '"]');
-    if (nettoEl) nettoEl.value = payload && payload.netto !== undefined ? payload.netto : '';
+    if (nettoEl) {
+      if (!(flexibleMode && nettoEl.getAttribute('data-manual') === '1')) {
+        if (!(respectExisting && nettoEl.value !== null && nettoEl.value !== '')) {
+          nettoEl.value = payload && payload.netto !== undefined ? payload.netto : '';
+        }
+      }
+    }
+
+    validateAgainstExpected(employeeId, { validateAll: validateAll });
   }
 
-  const triggerCalc = debounce(function (employeeId) {
+  function ensureHintEl(inputEl) {
+    if (!inputEl) return null;
+    let hint = inputEl.nextElementSibling;
+    if (hint && hint.classList && hint.classList.contains('calc-hint')) return hint;
+    hint = document.createElement('div');
+    hint.className = 'calc-hint text-warning small mt-1 d-none';
+    inputEl.insertAdjacentElement('afterend', hint);
+    return hint;
+  }
+
+  function clearWarning(inputEl) {
+    if (!inputEl) return;
+    inputEl.classList.remove('border', 'border-warning', 'border-2');
+    const hint = ensureHintEl(inputEl);
+    if (hint) {
+      hint.textContent = '';
+      hint.classList.add('d-none');
+    }
+  }
+
+  function showWarning(inputEl, message) {
+    if (!inputEl) return;
+    inputEl.classList.add('border', 'border-warning', 'border-2');
+    const hint = ensureHintEl(inputEl);
+    if (hint) {
+      hint.textContent = message;
+      hint.classList.remove('d-none');
+    }
+  }
+
+  function parseIntSafe(v) {
+    const n = parseInt(v, 10);
+    return isNaN(n) ? 0 : n;
+  }
+
+  function expectedDeductionAmount(employeeId, inputEl) {
+    const pct = parseFloat(inputEl.getAttribute('data-percentage') || '0');
+    const capRaw = inputEl.getAttribute('data-max-cap');
+    const cap = capRaw !== null && capRaw !== '' ? parseIntSafe(capRaw) : 0;
+
+    let base = 0;
+    let baseLabel = 'Total Pendapatan';
+    if (BASIC_SALARY_COMPONENT_ID) {
+      const basicEl = document.querySelector('.input-earning[data-employee-id="' + employeeId + '"][data-component-id="' + BASIC_SALARY_COMPONENT_ID + '"]');
+      base = parseIntSafe(basicEl ? basicEl.value : 0);
+      if (base > 0) baseLabel = 'Gaji Pokok';
+    }
+    if (!base) {
+      const earnings = collectEarnings(employeeId);
+      Object.keys(earnings).forEach(function (k) {
+        base += parseIntSafe(earnings[k]);
+      });
+    }
+    if (cap > 0) base = Math.min(base, cap);
+
+    const expected = Math.round(base * (pct / 100));
+    return {
+      expected: expected,
+      base: base,
+      baseLabel: baseLabel,
+      pct: pct,
+      cap: cap
+    };
+  }
+
+  function validateAgainstExpected(employeeId, options) {
+    const opts = options || {};
+    const validateAll = !!opts.validateAll;
+    if (!employeeId) return;
+
+    document.querySelectorAll('.readonly-deduction[data-employee-id="' + employeeId + '"]').forEach(function (el) {
+      const currentRaw = el.value;
+      const currentHasValue = currentRaw !== null && currentRaw !== '';
+
+      if (flexibleMode) {
+        if (el.getAttribute('data-manual') !== '1') {
+          clearWarning(el);
+          return;
+        }
+      } else {
+        if (!validateAll && !currentHasValue) {
+          clearWarning(el);
+          return;
+        }
+        if (validateAll && !currentHasValue) {
+          clearWarning(el);
+          return;
+        }
+      }
+
+      const current = parseIntSafe(el.value);
+      const info = expectedDeductionAmount(employeeId, el);
+      if (current === info.expected) {
+        clearWarning(el);
+        return;
+      }
+
+      const name = el.getAttribute('data-component-name') || 'Potongan';
+      const formula = info.cap > 0
+        ? `Seharusnya value ${name} adalah min(${info.baseLabel}, ${info.cap}) x ${info.pct} / 100 = ${info.expected}`
+        : `Seharusnya value ${name} adalah ${info.baseLabel} x ${info.pct} / 100 = ${info.expected}`;
+      showWarning(el, formula);
+    });
+
+    const expectedPayload = expectedByEmployee[employeeId] || {};
+    const expTax = expectedPayload.tax;
+    const expNetto = expectedPayload.netto;
+
+    const taxEl = document.querySelector('[data-field="tax"][data-employee-id="' + employeeId + '"]');
+    if (taxEl && expTax !== undefined) {
+      const currentTaxRaw = taxEl.value;
+      const currentTaxHasValue = currentTaxRaw !== null && currentTaxRaw !== '';
+      const shouldCheckTax = flexibleMode ? (taxEl.getAttribute('data-manual') === '1') : (validateAll ? currentTaxHasValue : currentTaxHasValue);
+      if (shouldCheckTax) {
+        const currentTax = parseIntSafe(taxEl.value);
+        if (currentTax === parseIntSafe(expTax)) {
+          clearWarning(taxEl);
+        } else {
+          showWarning(taxEl, `Seharusnya value PPh 21 adalah ${expTax}`);
+        }
+      } else {
+        clearWarning(taxEl);
+      }
+    } else {
+      clearWarning(taxEl);
+    }
+
+    const nettoEl = document.querySelector('[data-field="netto"][data-employee-id="' + employeeId + '"]');
+    if (nettoEl && expNetto !== undefined) {
+      const currentNettoRaw = nettoEl.value;
+      const currentNettoHasValue = currentNettoRaw !== null && currentNettoRaw !== '';
+      const shouldCheckNetto = flexibleMode ? (nettoEl.getAttribute('data-manual') === '1') : (validateAll ? currentNettoHasValue : currentNettoHasValue);
+      if (shouldCheckNetto) {
+        const currentNetto = parseIntSafe(nettoEl.value);
+        if (currentNetto === parseIntSafe(expNetto)) {
+          clearWarning(nettoEl);
+        } else {
+          showWarning(nettoEl, `Seharusnya value Netto adalah Total Pendapatan - Total Potongan - PPh 21 = ${expNetto}`);
+        }
+      } else {
+        clearWarning(nettoEl);
+      }
+    } else {
+      clearWarning(nettoEl);
+    }
+  }
+
+  function setFlexibleMode(enabled, options) {
+    const opts = options || {};
+    const skipRecalc = !!opts.skipRecalc;
+    flexibleMode = !!enabled;
+    const btn = document.getElementById('btnFlexibleMode');
+    if (btn) btn.textContent = flexibleMode ? 'Flexible Mode: ON' : 'Flexible Mode: OFF';
+
+    document.querySelectorAll('.readonly-deduction, [data-field="tax"], [data-field="netto"]').forEach(function (el) {
+      el.readOnly = !flexibleMode;
+      if (flexibleMode) {
+        el.classList.remove('bg-secondary');
+      } else {
+        el.classList.add('bg-secondary');
+        el.removeAttribute('data-manual');
+        clearWarning(el);
+      }
+    });
+
+    if (!flexibleMode && !skipRecalc) {
+      const employeeIds = new Set();
+      document.querySelectorAll('.input-earning[data-employee-id]').forEach(function (el) {
+        employeeIds.add(el.getAttribute('data-employee-id'));
+      });
+      employeeIds.forEach(function (eid) {
+        triggerCalc(eid);
+      });
+    }
+  }
+
+  const flexibleBtn = document.getElementById('btnFlexibleMode');
+  if (flexibleBtn) {
+    flexibleBtn.addEventListener('click', function () {
+      setFlexibleMode(!flexibleMode);
+    });
+  }
+
+  function requestCalc(employeeId, options) {
     fetch(calcUrl, {
       method: 'POST',
       headers: {
@@ -232,12 +437,20 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(async function (resp) {
       const data = await resp.json().catch(function(){ return {}; });
       if (!resp.ok) throw data;
-      applyCalculation(employeeId, data);
+      applyCalculation(employeeId, data, options);
     })
     .catch(function () {
       // no-op
     });
-  }, 400);
+  }
+
+  function triggerCalc(employeeId) {
+    if (!employeeId) return;
+    if (calcTimers[employeeId]) clearTimeout(calcTimers[employeeId]);
+    calcTimers[employeeId] = setTimeout(function () {
+      requestCalc(employeeId);
+    }, 400);
+  }
 
   document.querySelectorAll('.input-earning').forEach(function (el) {
     el.addEventListener('input', function () {
@@ -250,6 +463,31 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!employeeId) return;
       triggerCalc(employeeId);
     });
+  });
+
+  document.querySelectorAll('.readonly-deduction, [data-field="tax"], [data-field="netto"]').forEach(function (el) {
+    el.addEventListener('input', function () {
+      if (!flexibleMode) return;
+      this.setAttribute('data-manual', '1');
+      const employeeId = this.getAttribute('data-employee-id');
+      validateAgainstExpected(employeeId);
+    });
+    el.addEventListener('change', function () {
+      if (!flexibleMode) return;
+      this.setAttribute('data-manual', '1');
+      const employeeId = this.getAttribute('data-employee-id');
+      validateAgainstExpected(employeeId);
+    });
+  });
+
+  setFlexibleMode(false, { skipRecalc: true });
+
+  const initEmployeeIds = new Set();
+  document.querySelectorAll('.input-earning[data-employee-id]').forEach(function (el) {
+    initEmployeeIds.add(el.getAttribute('data-employee-id'));
+  });
+  initEmployeeIds.forEach(function (eid) {
+    requestCalc(eid, { respectExisting: true, validateAll: true });
   });
 
   const publishBtn = document.getElementById('btnPublishPeriod');

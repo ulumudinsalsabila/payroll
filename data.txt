@@ -1,0 +1,1233 @@
+data employee
+[
+  {
+    "id": "a18cf51e-613f-4e27-8919-9b811433cc44",
+    "employee_code": "ALT001",
+    "name": "Akhmad Fauzi",
+    "position": "QA (Quality Assurance)",
+    "department": "Teknis",
+    "address": "Jl. Purnawirawan, Palam, Cempaka, Kota Banjarbaru",
+    "bank_name": null,
+    "bank_account_name": null,
+    "bank_account_number": null,
+    "join_date": "2024-05-01T00:00:00.000000Z",
+    "leave_balance": 4,
+    "npwp_number": null,
+    "ptkp_status": "TK/1",
+    "ter_category": "A",
+    "created_at": "2026-04-15T15:43:19.000000Z",
+    "updated_at": "2026-04-15T15:43:19.000000Z"
+  },
+  {
+    "id": "a18cf51e-6614-4c33-a029-f09b66dd7360",
+    "employee_code": "ALT002",
+    "name": "Rifky Lovanto",
+    "position": "Backend Developer",
+    "department": "Teknis",
+    "address": "Jl. Mampang Indah I, Pancoran Mas, Depok",
+    "bank_name": null,
+    "bank_account_name": null,
+    "bank_account_number": null,
+    "join_date": "2024-01-01T00:00:00.000000Z",
+    "leave_balance": 4,
+    "npwp_number": null,
+    "ptkp_status": "TK/1",
+    "ter_category": "A",
+    "created_at": "2026-04-15T15:43:19.000000Z",
+    "updated_at": "2026-04-15T15:43:19.000000Z"
+  }
+]
+
+data payslip components
+[
+  {
+    "id": "a18cf52f-f9f0-499a-96c3-ab32af48c152",
+    "name": "Gaji Pokok",
+    "type": "earning",
+    "is_active": true,
+    "created_at": "2026-04-15T15:43:30.000000Z",
+    "updated_at": "2026-04-15T15:43:30.000000Z",
+    "percentage": "0.00",
+    "max_cap": null
+  },
+  {
+    "id": "a18cf530-0053-4a63-8263-7d5261cc7de7",
+    "name": "Jaminan Hari Tua",
+    "type": "deduction",
+    "is_active": true,
+    "created_at": "2026-04-15T15:43:30.000000Z",
+    "updated_at": "2026-04-15T15:43:30.000000Z",
+    "percentage": "5.70",
+    "max_cap": null
+  },
+  {
+    "id": "a18cf530-0092-475e-8b11-90a2bdceff08",
+    "name": "Jaminan Kecelakaan Kerja",
+    "type": "deduction",
+    "is_active": true,
+    "created_at": "2026-04-15T15:43:30.000000Z",
+    "updated_at": "2026-04-15T15:43:30.000000Z",
+    "percentage": "0.54",
+    "max_cap": null
+  },
+  {
+    "id": "a18cf530-00cb-40e5-9af7-5b34033e354d",
+    "name": "Jaminan Kematian",
+    "type": "deduction",
+    "is_active": true,
+    "created_at": "2026-04-15T15:43:30.000000Z",
+    "updated_at": "2026-04-15T15:43:30.000000Z",
+    "percentage": "0.30",
+    "max_cap": null
+  },
+  {
+    "id": "a18cf530-0008-4aae-ba1a-a349cf28a14e",
+    "name": "Lembur dan Bonus",
+    "type": "earning",
+    "is_active": true,
+    "created_at": "2026-04-15T15:43:30.000000Z",
+    "updated_at": "2026-04-15T15:43:30.000000Z",
+    "percentage": "0.00",
+    "max_cap": null
+  },
+  {
+    "id": "a18cf530-0103-45a9-a646-3e19770f63dc",
+    "name": "PPh Pasal 21",
+    "type": "tax",
+    "is_active": true,
+    "created_at": "2026-04-15T15:43:30.000000Z",
+    "updated_at": "2026-04-15T15:43:30.000000Z",
+    "percentage": "0.00",
+    "max_cap": null
+  },
+  {
+    "id": "a18dbfbf-cbb2-4f48-af67-e36b169127a6",
+    "name": "THR",
+    "type": "earning",
+    "is_active": false,
+    "created_at": "2026-04-16T01:09:54.000000Z",
+    "updated_at": "2026-04-16T01:10:26.000000Z",
+    "percentage": null,
+    "max_cap": null
+  }
+]
+
+data TER
+[
+  {
+    "id": "731c8349-6da6-4271-bc30-8382c0fda5a6",
+    "category": "A",
+    "min_bruto": 0,
+    "max_bruto": 5400000,
+    "percentage": "0.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "7c62771b-ec8b-46cc-88b5-b64e87158301",
+    "category": "A",
+    "min_bruto": 5400001,
+    "max_bruto": 5650000,
+    "percentage": "0.25",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "d5057f48-0042-47b8-8499-bfe5dee8d313",
+    "category": "A",
+    "min_bruto": 5650001,
+    "max_bruto": 5950000,
+    "percentage": "0.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "a8e9667e-51b3-46bf-9f66-e91892421f9a",
+    "category": "A",
+    "min_bruto": 5950001,
+    "max_bruto": 6300000,
+    "percentage": "0.75",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "e09b95ff-57ec-48cb-a82e-07045833e5af",
+    "category": "A",
+    "min_bruto": 6300001,
+    "max_bruto": 6750000,
+    "percentage": "1.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "aa318f89-2872-4275-8a07-fc9c9ed4e48b",
+    "category": "A",
+    "min_bruto": 6750001,
+    "max_bruto": 7500000,
+    "percentage": "1.25",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "ace6c2ef-2f03-4bb7-8a1f-ba1f77427239",
+    "category": "A",
+    "min_bruto": 7500001,
+    "max_bruto": 8550000,
+    "percentage": "1.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "1168a819-8884-49d9-83da-23c79b40a312",
+    "category": "A",
+    "min_bruto": 8550001,
+    "max_bruto": 9650000,
+    "percentage": "1.75",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "94a5ff7c-81c1-415e-a0f6-b92fb67ee380",
+    "category": "A",
+    "min_bruto": 9650001,
+    "max_bruto": 10050000,
+    "percentage": "2.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "711ce97e-588c-4c03-bd39-54482e455d3e",
+    "category": "A",
+    "min_bruto": 10050001,
+    "max_bruto": 10350000,
+    "percentage": "2.25",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "504b184c-bb77-4692-a657-5233c8dac277",
+    "category": "A",
+    "min_bruto": 10350001,
+    "max_bruto": 10700000,
+    "percentage": "2.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "9b8e8eb9-1ede-410d-aa6d-9a58a338acaf",
+    "category": "A",
+    "min_bruto": 10700001,
+    "max_bruto": 11050000,
+    "percentage": "3.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "b9d76c51-9dc3-4cc9-a4e3-4a9ae4e31a40",
+    "category": "A",
+    "min_bruto": 11050001,
+    "max_bruto": 11250000,
+    "percentage": "3.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "e763ee76-5377-4bf8-816a-cfc84d0aca34",
+    "category": "A",
+    "min_bruto": 11250001,
+    "max_bruto": 11600000,
+    "percentage": "4.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "85eb980e-0bb4-4cb4-bb15-4cda38209fa1",
+    "category": "A",
+    "min_bruto": 11600001,
+    "max_bruto": 12500000,
+    "percentage": "5.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "c7280a91-e951-4fcb-a4d3-8abaa08f40e5",
+    "category": "A",
+    "min_bruto": 12500001,
+    "max_bruto": 13750000,
+    "percentage": "6.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "497f35a2-fd09-4b33-ad43-ac3c844c9748",
+    "category": "A",
+    "min_bruto": 13750001,
+    "max_bruto": 15100000,
+    "percentage": "7.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "82914e21-43cd-4617-bc6d-165cd0515628",
+    "category": "A",
+    "min_bruto": 15100001,
+    "max_bruto": 16950000,
+    "percentage": "8.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "4039607d-2f3f-489e-a122-2b348d358d82",
+    "category": "A",
+    "min_bruto": 16950001,
+    "max_bruto": 19750000,
+    "percentage": "9.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "31d2b390-5e55-4fa7-a430-ad46e3bb6644",
+    "category": "A",
+    "min_bruto": 19750001,
+    "max_bruto": 24150000,
+    "percentage": "10.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f700b095-b227-4028-b7fb-1acd6bca8b6f",
+    "category": "A",
+    "min_bruto": 24150001,
+    "max_bruto": 26450000,
+    "percentage": "11.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "39509c31-a212-4153-9f45-8ef046ba7560",
+    "category": "A",
+    "min_bruto": 26450001,
+    "max_bruto": 28000000,
+    "percentage": "12.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "142702e8-6a7c-4b09-bb1e-def1fc203666",
+    "category": "A",
+    "min_bruto": 28000001,
+    "max_bruto": 30050000,
+    "percentage": "13.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "d8bfc509-e42c-4d78-bd3c-c382e4fefa65",
+    "category": "A",
+    "min_bruto": 30050001,
+    "max_bruto": 32400000,
+    "percentage": "14.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "762f4c9b-1e02-445d-b3b1-04ab50269495",
+    "category": "A",
+    "min_bruto": 32400001,
+    "max_bruto": 35400000,
+    "percentage": "15.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "83ab7b6e-432d-4d1e-937f-0c7012f87b78",
+    "category": "A",
+    "min_bruto": 35400001,
+    "max_bruto": 39100000,
+    "percentage": "16.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "a2d87800-5dcd-46e6-a433-36556ebfabfe",
+    "category": "A",
+    "min_bruto": 39100001,
+    "max_bruto": 43850000,
+    "percentage": "17.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "ff9744c2-5107-474e-8558-257e4581f69b",
+    "category": "A",
+    "min_bruto": 43850001,
+    "max_bruto": 47800000,
+    "percentage": "18.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "1284b23d-0d00-4513-9536-e3b8fef123ee",
+    "category": "A",
+    "min_bruto": 47800001,
+    "max_bruto": 51400000,
+    "percentage": "19.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "d9ada3cf-5462-42df-8d4f-6dd495b42c4c",
+    "category": "A",
+    "min_bruto": 51400001,
+    "max_bruto": 56300000,
+    "percentage": "20.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "b8740476-ed79-490d-93b9-a0ee224533fa",
+    "category": "A",
+    "min_bruto": 56300001,
+    "max_bruto": 62200000,
+    "percentage": "21.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "37898276-658d-4c1e-8bf8-da1cf41962c7",
+    "category": "A",
+    "min_bruto": 62200001,
+    "max_bruto": 68600000,
+    "percentage": "22.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f7d7a30a-7b81-4b5c-85a2-42c88fd73064",
+    "category": "A",
+    "min_bruto": 68600001,
+    "max_bruto": 77500000,
+    "percentage": "23.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "3a857fd3-c149-4bf1-ae3a-4387a63ffd02",
+    "category": "A",
+    "min_bruto": 77500001,
+    "max_bruto": 89000000,
+    "percentage": "24.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "39772a67-e382-47bf-a545-a54248475a9f",
+    "category": "A",
+    "min_bruto": 89000001,
+    "max_bruto": 103000000,
+    "percentage": "25.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "4ff0cde0-6b60-46bc-9513-ef7f781930e5",
+    "category": "A",
+    "min_bruto": 103000001,
+    "max_bruto": 125000000,
+    "percentage": "26.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "0da83935-75b7-4566-8b70-3778ce38b472",
+    "category": "A",
+    "min_bruto": 125000001,
+    "max_bruto": 157000000,
+    "percentage": "27.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "ed5b5010-769e-4f14-8a82-82353a95cf0d",
+    "category": "A",
+    "min_bruto": 157000001,
+    "max_bruto": 206000000,
+    "percentage": "28.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "ae215f4d-cbfc-4489-ac28-94271c19d14d",
+    "category": "A",
+    "min_bruto": 206000001,
+    "max_bruto": 337000000,
+    "percentage": "29.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "22dd12ba-395d-4ca9-8252-f10eb9febe3d",
+    "category": "A",
+    "min_bruto": 337000001,
+    "max_bruto": 454000000,
+    "percentage": "30.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "1717135e-44e5-43ae-b52a-3c5f8260bbc7",
+    "category": "A",
+    "min_bruto": 454000001,
+    "max_bruto": 550000000,
+    "percentage": "31.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "556d79ad-b6e3-4271-8b96-027f0ada2bd5",
+    "category": "A",
+    "min_bruto": 550000001,
+    "max_bruto": 895000000,
+    "percentage": "32.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "b7961a90-5206-49a6-a79c-b6d77b77395c",
+    "category": "A",
+    "min_bruto": 895000001,
+    "max_bruto": 1400000000,
+    "percentage": "33.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "8ed5103f-caa9-42a6-b4bb-0da715b2650a",
+    "category": "A",
+    "min_bruto": 1400000001,
+    "max_bruto": null,
+    "percentage": "34.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "0bc02905-e01f-451b-91be-0cdaf059c770",
+    "category": "B",
+    "min_bruto": 0,
+    "max_bruto": 6200000,
+    "percentage": "0.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "9668e952-ee8a-4920-b43e-69f955c91048",
+    "category": "B",
+    "min_bruto": 6200001,
+    "max_bruto": 6500000,
+    "percentage": "0.25",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f6531c38-f4e3-418f-bb4e-c5bd0fc9c9c7",
+    "category": "B",
+    "min_bruto": 6500001,
+    "max_bruto": 6850000,
+    "percentage": "0.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "081384a6-2fc4-4305-ab48-b45b69e41f5e",
+    "category": "B",
+    "min_bruto": 6850001,
+    "max_bruto": 7300000,
+    "percentage": "0.75",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "af7fb981-f89e-4bd4-bce7-7d76104af496",
+    "category": "B",
+    "min_bruto": 7300001,
+    "max_bruto": 9200000,
+    "percentage": "1.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "dc0ff8c7-af29-4b5a-99bc-254316c428c7",
+    "category": "B",
+    "min_bruto": 9200001,
+    "max_bruto": 10750000,
+    "percentage": "1.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "908a6648-b15e-4de4-a485-9acd6f9c5a70",
+    "category": "B",
+    "min_bruto": 10750001,
+    "max_bruto": 11250000,
+    "percentage": "2.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "aecebce5-5fb3-4ce1-b380-034ddc95f3d0",
+    "category": "B",
+    "min_bruto": 11250001,
+    "max_bruto": 11600000,
+    "percentage": "2.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "c67adbfd-eaae-4163-b710-0f581bfe9002",
+    "category": "B",
+    "min_bruto": 11600001,
+    "max_bruto": 12600000,
+    "percentage": "3.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "8d95872b-8927-4599-af53-a49a5fb3f4bc",
+    "category": "B",
+    "min_bruto": 12600001,
+    "max_bruto": 13600000,
+    "percentage": "4.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "069704c7-4a24-42af-a5b1-68b761be39fd",
+    "category": "B",
+    "min_bruto": 13600001,
+    "max_bruto": 14950000,
+    "percentage": "5.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "ecfb5be0-f637-47a3-9967-ccd4bc2717a4",
+    "category": "B",
+    "min_bruto": 14950001,
+    "max_bruto": 16400000,
+    "percentage": "6.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "38883591-d1f1-4810-9cd4-f5a3f9f8edce",
+    "category": "B",
+    "min_bruto": 16400001,
+    "max_bruto": 18450000,
+    "percentage": "7.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "e8031cd8-7e8f-4260-90b9-d414823cfef8",
+    "category": "B",
+    "min_bruto": 18450001,
+    "max_bruto": 21850000,
+    "percentage": "8.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f944a0b2-cf54-4340-b359-5560660dc9f0",
+    "category": "B",
+    "min_bruto": 21850001,
+    "max_bruto": 26000000,
+    "percentage": "9.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "6a8ecd8d-1a99-4742-8594-d02b5bce1a03",
+    "category": "B",
+    "min_bruto": 26000001,
+    "max_bruto": 27700000,
+    "percentage": "10.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "686539e5-3877-47a0-86d6-ffd5fbea376d",
+    "category": "B",
+    "min_bruto": 27700001,
+    "max_bruto": 29350000,
+    "percentage": "11.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "9a5f8f87-9c3d-4657-a931-b2a604dfc384",
+    "category": "B",
+    "min_bruto": 29350001,
+    "max_bruto": 31450000,
+    "percentage": "12.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "1d291cbd-03bf-4528-9783-08feaa9c5ea8",
+    "category": "B",
+    "min_bruto": 31450001,
+    "max_bruto": 33950000,
+    "percentage": "13.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "6fcf4c37-9c85-4b29-bf66-319ee6419695",
+    "category": "B",
+    "min_bruto": 33950001,
+    "max_bruto": 37100000,
+    "percentage": "14.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "8b643a9e-1666-4167-b91b-d465a717f076",
+    "category": "B",
+    "min_bruto": 37100001,
+    "max_bruto": 41100000,
+    "percentage": "15.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "28f458bc-7967-4e9e-abc8-e755b3bfbeb1",
+    "category": "B",
+    "min_bruto": 41100001,
+    "max_bruto": 45800000,
+    "percentage": "16.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "73ae7b53-70b2-4d18-b321-b79709b98907",
+    "category": "B",
+    "min_bruto": 45800001,
+    "max_bruto": 49500000,
+    "percentage": "17.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "bea15a63-5b16-499f-ac54-4f329c96b87e",
+    "category": "B",
+    "min_bruto": 49500001,
+    "max_bruto": 53800000,
+    "percentage": "18.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "d13e4008-eb8d-4c84-a6a6-6e6d25a594d6",
+    "category": "B",
+    "min_bruto": 53800001,
+    "max_bruto": 58500000,
+    "percentage": "19.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "d6f970ce-cf9d-42b4-a4cb-ca7b158eb0eb",
+    "category": "B",
+    "min_bruto": 58500001,
+    "max_bruto": 64000000,
+    "percentage": "20.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "393e4304-4de7-4ba1-ae49-bd2ade674898",
+    "category": "B",
+    "min_bruto": 64000001,
+    "max_bruto": 71000000,
+    "percentage": "21.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "64c362e4-d456-49fe-af4f-6653e0507f82",
+    "category": "B",
+    "min_bruto": 71000001,
+    "max_bruto": 80000000,
+    "percentage": "22.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "24246c7c-5344-4452-bd30-a02e5ff5c1ca",
+    "category": "B",
+    "min_bruto": 80000001,
+    "max_bruto": 93000000,
+    "percentage": "23.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "e0b7be29-484b-41cf-b75f-00806cf4fa62",
+    "category": "B",
+    "min_bruto": 93000001,
+    "max_bruto": 109000000,
+    "percentage": "24.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "e3955e73-e639-4a82-93ae-38d32249f7f8",
+    "category": "B",
+    "min_bruto": 109000001,
+    "max_bruto": 129000000,
+    "percentage": "25.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "cf4a6507-7f3d-450f-b91b-846c1ad35e66",
+    "category": "B",
+    "min_bruto": 129000001,
+    "max_bruto": 163000000,
+    "percentage": "26.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "19868e3a-9613-412f-b36f-a264720adf65",
+    "category": "B",
+    "min_bruto": 163000001,
+    "max_bruto": 211000000,
+    "percentage": "27.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "7565dd1d-036c-48ae-b367-4ddd79c98cb8",
+    "category": "B",
+    "min_bruto": 211000001,
+    "max_bruto": 374000000,
+    "percentage": "28.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "de65dbb8-29ce-4f17-a23a-d2181d1b7fa1",
+    "category": "B",
+    "min_bruto": 374000001,
+    "max_bruto": 459000000,
+    "percentage": "29.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "cf0ac497-7056-40b0-9b0a-063c323e8612",
+    "category": "B",
+    "min_bruto": 459000001,
+    "max_bruto": 555000000,
+    "percentage": "30.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "170e5c3c-b918-4142-b227-139bc06312b6",
+    "category": "B",
+    "min_bruto": 555000001,
+    "max_bruto": 895000000,
+    "percentage": "31.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "76f5c28f-e649-46f5-b805-da3c7e8a26fb",
+    "category": "B",
+    "min_bruto": 895000001,
+    "max_bruto": 1405000000,
+    "percentage": "32.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f82e28bf-8de6-4a06-9007-a45f22324a6a",
+    "category": "B",
+    "min_bruto": 1405000001,
+    "max_bruto": null,
+    "percentage": "34.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "0880cf0b-3ba6-4903-98e8-dc481eef5983",
+    "category": "C",
+    "min_bruto": 0,
+    "max_bruto": 6600000,
+    "percentage": "0.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "e6be851c-3d63-4020-9c4d-334d2a95b425",
+    "category": "C",
+    "min_bruto": 6600001,
+    "max_bruto": 6950000,
+    "percentage": "0.25",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "3b933963-6f7d-4ffd-b0b4-1b70f770c530",
+    "category": "C",
+    "min_bruto": 6950001,
+    "max_bruto": 7350000,
+    "percentage": "0.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "69fedcee-9605-4db0-a95d-b7ed17286bd4",
+    "category": "C",
+    "min_bruto": 7350001,
+    "max_bruto": 7800000,
+    "percentage": "0.75",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "28d53c21-0fb3-41a4-9414-4b0bde0f453c",
+    "category": "C",
+    "min_bruto": 7800001,
+    "max_bruto": 8850000,
+    "percentage": "1.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "e31adcf6-00a2-49bf-b921-ad91cbd5fff7",
+    "category": "C",
+    "min_bruto": 8850001,
+    "max_bruto": 9800000,
+    "percentage": "1.25",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "d588bd94-1d9b-4522-a4a9-76881c443e82",
+    "category": "C",
+    "min_bruto": 9800001,
+    "max_bruto": 10950000,
+    "percentage": "1.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "0ad54932-d4b4-4f7d-9f78-80f91be4127c",
+    "category": "C",
+    "min_bruto": 10950001,
+    "max_bruto": 11200000,
+    "percentage": "1.75",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "7c2f4aa0-350c-49ba-858a-72dba85503ca",
+    "category": "C",
+    "min_bruto": 11200001,
+    "max_bruto": 11600000,
+    "percentage": "2.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f0b32482-d3fb-4deb-90d1-5a805b3eef8e",
+    "category": "C",
+    "min_bruto": 11600001,
+    "max_bruto": 12050000,
+    "percentage": "2.50",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "a6ec2a73-45fc-4fbe-96da-c6354ff2e56b",
+    "category": "C",
+    "min_bruto": 12050001,
+    "max_bruto": 12950000,
+    "percentage": "3.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "be619121-f553-4c22-9ebd-e9956d7bb54d",
+    "category": "C",
+    "min_bruto": 12950001,
+    "max_bruto": 14100000,
+    "percentage": "4.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "44e60567-5e53-436e-9d8a-9509b4c8c875",
+    "category": "C",
+    "min_bruto": 14100001,
+    "max_bruto": 15550000,
+    "percentage": "5.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "a761e4ce-9b9e-4a1a-816f-20fa3f5fe03c",
+    "category": "C",
+    "min_bruto": 15550001,
+    "max_bruto": 17050000,
+    "percentage": "6.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "c2b624a0-a8a5-4f97-a877-e1c87269b72a",
+    "category": "C",
+    "min_bruto": 17050001,
+    "max_bruto": 19500000,
+    "percentage": "7.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "3a800690-4a32-45b5-9d14-6aa88244f418",
+    "category": "C",
+    "min_bruto": 19500001,
+    "max_bruto": 22700000,
+    "percentage": "8.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "ccb90814-1db4-4cf8-b613-44aedd61561c",
+    "category": "C",
+    "min_bruto": 22700001,
+    "max_bruto": 26600000,
+    "percentage": "9.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "96e35f51-92f3-4edf-b32a-edb2e92ab167",
+    "category": "C",
+    "min_bruto": 26600001,
+    "max_bruto": 28100000,
+    "percentage": "10.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f06473bf-9347-49e3-83fc-757b0c1d41b4",
+    "category": "C",
+    "min_bruto": 28100001,
+    "max_bruto": 30100000,
+    "percentage": "11.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "11be2670-5af4-4fde-b7b6-c5a4cd55e432",
+    "category": "C",
+    "min_bruto": 30100001,
+    "max_bruto": 32600000,
+    "percentage": "12.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "9a0e9d2f-daff-47d8-a903-e866d4d53477",
+    "category": "C",
+    "min_bruto": 32600001,
+    "max_bruto": 35400000,
+    "percentage": "13.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "1b7c08d1-16c4-41b6-92ec-d3881c363db1",
+    "category": "C",
+    "min_bruto": 35400001,
+    "max_bruto": 38900000,
+    "percentage": "14.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "ca6f696e-1382-45d9-a07a-0a90237ca98e",
+    "category": "C",
+    "min_bruto": 38900001,
+    "max_bruto": 43000000,
+    "percentage": "15.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "22069037-c9e6-4c1f-a98a-212a341c9788",
+    "category": "C",
+    "min_bruto": 43000001,
+    "max_bruto": 47400000,
+    "percentage": "16.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "a752c62e-4c1d-4fd4-8066-1b243e1e8784",
+    "category": "C",
+    "min_bruto": 47400001,
+    "max_bruto": 51200000,
+    "percentage": "17.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "0536e0de-8be5-4fe2-8976-bdb8803763a4",
+    "category": "C",
+    "min_bruto": 51200001,
+    "max_bruto": 55800000,
+    "percentage": "18.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "9e2f5f77-42c4-461d-9726-6187dd34611b",
+    "category": "C",
+    "min_bruto": 55800001,
+    "max_bruto": 60400000,
+    "percentage": "19.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "7fff70e5-b2f7-4534-af6e-5b314cd17e2f",
+    "category": "C",
+    "min_bruto": 60400001,
+    "max_bruto": 66700000,
+    "percentage": "20.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "b8933d71-3529-4af2-9397-d5fabf482fe1",
+    "category": "C",
+    "min_bruto": 66700001,
+    "max_bruto": 74500000,
+    "percentage": "21.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "7e0db5b9-c768-4207-ae08-4a7b079da79b",
+    "category": "C",
+    "min_bruto": 74500001,
+    "max_bruto": 83200000,
+    "percentage": "22.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "4710b6fc-4b69-4b0e-913f-c1519847f77c",
+    "category": "C",
+    "min_bruto": 83200001,
+    "max_bruto": 95600000,
+    "percentage": "23.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "128953f0-fe36-484e-830d-e589cff8cc01",
+    "category": "C",
+    "min_bruto": 95600001,
+    "max_bruto": 113000000,
+    "percentage": "24.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "66bf5717-8f1e-48af-acf7-8605b00d8de4",
+    "category": "C",
+    "min_bruto": 113000001,
+    "max_bruto": 134000000,
+    "percentage": "25.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f82fd0f7-e4bd-4040-9349-b611e83921b3",
+    "category": "C",
+    "min_bruto": 134000001,
+    "max_bruto": 169000000,
+    "percentage": "26.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "b31f53d7-266a-464f-87b6-07a745a5238e",
+    "category": "C",
+    "min_bruto": 169000001,
+    "max_bruto": 221000000,
+    "percentage": "27.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "f9da7202-ef9a-4cb2-826c-8d2f83e64533",
+    "category": "C",
+    "min_bruto": 221000001,
+    "max_bruto": 390000000,
+    "percentage": "28.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "4e9b24c3-5cdf-4c10-a27b-e9632220f291",
+    "category": "C",
+    "min_bruto": 390000001,
+    "max_bruto": 463000000,
+    "percentage": "29.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "eb662293-5104-4cc2-8613-116002e6fab4",
+    "category": "C",
+    "min_bruto": 463000001,
+    "max_bruto": 561000000,
+    "percentage": "30.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "addf38d1-0a50-4e35-b210-9a01d3179228",
+    "category": "C",
+    "min_bruto": 561000001,
+    "max_bruto": 895000000,
+    "percentage": "31.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "9f944532-eed6-466c-9a1d-13ea24d9537a",
+    "category": "C",
+    "min_bruto": 895000001,
+    "max_bruto": 1410000000,
+    "percentage": "32.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  },
+  {
+    "id": "a1227282-e189-4ae3-a02b-28ee3a78ddd0",
+    "category": "C",
+    "min_bruto": 1410000001,
+    "max_bruto": null,
+    "percentage": "34.00",
+    "created_at": "2026-04-15T15:43:40.000000Z",
+    "updated_at": "2026-04-15T15:43:40.000000Z"
+  }
+]
