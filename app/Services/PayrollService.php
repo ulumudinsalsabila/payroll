@@ -73,11 +73,28 @@ class PayrollService
             }
         }
 
-        $netto = (int) ($totalBruto - $totalDeductions - $tax);
+        $taxComponents = PayslipComponent::query()
+            ->where('is_active', true)
+            ->where('type', 'tax')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        $taxes = [];
+        foreach ($taxComponents as $comp) {
+            $taxes[$comp->id] = 0;
+        }
+
+        if ($tax > 0 && $taxComponents->count() > 0) {
+            $target = $taxComponents->firstWhere('name', 'PPh Pasal 21') ?? $taxComponents->first();
+            $taxes[$target->id] = $tax;
+        }
+
+        $totalTax = array_sum($taxes);
+        $netto = (int) ($totalBruto - $totalDeductions - $totalTax);
 
         return [
             'deductions' => $deductions,
-            'tax' => $tax,
+            'taxes' => $taxes,
             'netto' => $netto,
         ];
     }

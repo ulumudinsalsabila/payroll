@@ -34,6 +34,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::post('payroll-periods/calculate-row', [PayrollPeriodController::class, 'calculateRow'])->name('payroll-periods.calculate-row');
     Route::post('payroll-periods/{payroll_period}/save-draft', [PayrollPeriodController::class, 'saveDraft'])->name('payroll-periods.save-draft');
+    Route::post('payroll-periods/{payroll_period}/import-template', [PayrollPeriodController::class, 'importTemplate'])->name('payroll-periods.import-template');
+    Route::post('payroll-periods/{payroll_period}/publish-send', [PayrollPeriodController::class, 'publishAndSend'])->name('payroll-periods.publish-send');
+    Route::get('payroll-periods/{payroll_period}/download-template', [PayrollPeriodController::class, 'downloadTemplate'])->name('payroll-periods.download-template');
+    Route::get('payroll-periods/{payroll_period}/preview-pdf', [PayrollPeriodController::class, 'previewPdf'])->name('payroll-periods.preview-pdf');
     Route::resource('payroll-periods', PayrollPeriodController::class);
     Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
     Route::resource('payslip-components', PayslipComponentController::class);

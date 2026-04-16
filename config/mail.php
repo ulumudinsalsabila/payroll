@@ -46,6 +46,14 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
+        'microsoft-graph-api' => [
+            'transport' => 'microsoft-graph-api',
+            'client_id' => env('MAIL_MS_GRAPH_CLIENT_ID'),
+            'client_secret' => env('MAIL_MS_GRAPH_CLIENT_SECRET'),
+            'tenant_id' => env('MAIL_MS_GRAPH_TENANT_ID'),
+            'saveToSentItems' => env('MAIL_MS_GRAPH_SAVE_TO_SENT_ITEMS', true),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

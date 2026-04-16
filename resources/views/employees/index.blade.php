@@ -88,6 +88,7 @@
                   data-id="{{ $e->id }}"
                   data-employee_code="{{ $e->employee_code }}"
                   data-name="{{ $e->name }}"
+                  data-email="{{ $e->email }}"
                   data-position="{{ $e->position }}"
                   data-department="{{ $e->department }}"
                   data-address="{{ $e->address }}"
@@ -137,6 +138,10 @@
             <div class="col-md-6">
               <label class="form-label">Nama</label>
               <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email (Opsional)</label>
+              <input type="email" name="email" id="email" class="form-control" placeholder="nama@perusahaan.com">
             </div>
             <div class="col-md-6">
               <label class="form-label">Posisi</label>
@@ -274,6 +279,7 @@ $(document).ready(function() {
     $('#employee_id').val(id);
     
     $('#name').val(row.data('name'));
+    $('#email').val(row.data('email'));
     $('#position').val(row.data('position'));
     $('#department').val(row.data('department'));
     $('#address').val(row.data('address'));
@@ -301,6 +307,7 @@ $(document).ready(function() {
     $('#employee_id').val('');
     
     $('#name').val('');
+    $('#email').val('');
     $('#position').val('');
     $('#department').val('');
     $('#address').val('');

@@ -31,6 +31,7 @@ class EmployeeController extends Controller
     {
         $data = $request->validate([
             'name' => ['required','string','max:255'],
+            'email' => ['nullable','email','max:255', Rule::unique('employees', 'email')],
             'position' => ['required','string','max:255'],
             'department' => ['required','string','max:255'],
             'address' => ['nullable','string'],
@@ -67,6 +68,7 @@ class EmployeeController extends Controller
         $before = $employee->toArray();
         $data = $request->validate([
             'name' => ['required','string','max:255'],
+            'email' => ['nullable','email','max:255', Rule::unique('employees', 'email')->ignore($employee->id, 'id')],
             'position' => ['required','string','max:255'],
             'department' => ['required','string','max:255'],
             'address' => ['nullable','string'],

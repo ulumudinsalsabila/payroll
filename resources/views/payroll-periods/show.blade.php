@@ -53,8 +53,8 @@
                         <i class="bi bi-download me-2"></i>Download Template
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">Template Kosong</a></li>
-                        <li><a class="dropdown-item" href="#">Isi dengan Data Bulan Lalu</a></li>
+                        <li><a class="dropdown-item" href="{{ route('payroll-periods.download-template', ['payroll_period' => $payrollPeriod->id, 'mode' => 'empty']) }}">Template Kosong</a></li>
+                        <li><a class="dropdown-item" href="{{ route('payroll-periods.download-template', ['payroll_period' => $payrollPeriod->id, 'mode' => 'last_period']) }}">Isi dengan Data Bulan Lalu</a></li>
                     </ul>
                 </div>
 
@@ -62,10 +62,17 @@
                     <i class="bi bi-file-earmark-spreadsheet me-2"></i>Import Excel
                 </button>
 
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#previewPdfModal">
+                    <i class="bi bi-eye me-2"></i>Preview PDF
+                </button>
+
                 @if ($payrollPeriod->status === 'draft')
                     <button type="button" class="btn btn-success" id="btnPublishPeriod">
                         <i class="bi bi-send-check me-2"></i>Publish &amp; Send PDF
                     </button>
+                    <form id="publishSendForm" method="POST" action="{{ route('payroll-periods.publish-send', ['payroll_period' => $payrollPeriod->id]) }}" class="d-none">
+                        @csrf
+                    </form>
                 @endif
             </div>
         </div>
@@ -99,7 +106,9 @@
                             @foreach($deductions as $deduction)
                                 <th style="min-width: 160px;">{{ $deduction->name }}</th>
                             @endforeach
-                            <th style="min-width: 160px;">PPh 21</th>
+                            @foreach($taxes as $tax)
+                                <th style="min-width: 160px;">{{ $tax->name }}</th>
+                            @endforeach
                             <th style="min-width: 160px;">Netto</th>
                         </tr>
                     </thead>
@@ -123,9 +132,11 @@
                                     </td>
                                 @endforeach
 
-                                <td>
-                                    <input type="number" class="form-control form-control-sm bg-secondary" name="tax[{{ $employee->id }}]" value="{{ old('tax.' . $employee->id, $draftTax[$employee->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-field="tax">
-                                </td>
+                                @foreach($taxes as $tax)
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm bg-secondary readonly-tax" name="payslips[{{ $employee->id }}][{{ $tax->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $tax->id, $draftAmounts[$employee->id][$tax->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-component-id="{{ $tax->id }}" data-component-name="{{ $tax->name }}" data-field="tax_component">
+                                    </td>
+                                @endforeach
                                 <td>
                                     <input type="number" class="form-control form-control-sm bg-secondary fw-bold" name="netto[{{ $employee->id }}]" value="{{ old('netto.' . $employee->id, $draftNetto[$employee->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-field="netto">
                                 </td>
@@ -144,7 +155,7 @@
 <div class="modal fade" id="importExcelModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form method="POST" action="#" onsubmit="return false;">
+            <form method="POST" action="{{ route('payroll-periods.import-template', $payrollPeriod->id) }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Import Excel</h5>
@@ -168,6 +179,59 @@
     </div>
 </div>
 
+<div class="modal fade" id="previewPdfModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Preview PDF Payslip</h5>
+                <button type="button" class="btn btn-sm btn-icon" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Pilih Karyawan</label>
+                    <select class="form-select" id="preview_employee_id" required>
+                        <option value="">-- pilih --</option>
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->employee_code }} - {{ $employee->name }}</option>
+                        @endforeach
+                    </select>
+                    <div class="form-text">Preview berdasarkan draft yang sudah tersimpan.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-primary" id="btnDoPreviewPdf">Preview</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if ($payrollPeriod->status === 'draft')
+<div class="modal fade" id="confirmPublishModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Publish &amp; Send PDF</h5>
+                <button type="button" class="btn btn-sm btn-icon" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Yakin ingin publish periode ini dan mengirim PDF? Aksi ini bersifat final.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" id="btnConfirmPublishSend">
+                    <i class="bi bi-send-check me-2"></i>Publish
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 @endsection
 
 @push('scripts')
@@ -186,6 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const CSRF_TOKEN = '{{ csrf_token() }}';
   const calcUrl = '{{ route('payroll-periods.calculate-row') }}';
   const BASIC_SALARY_COMPONENT_ID = @json($basicSalaryComponentId ?? null);
+  const previewPdfUrl = '{{ route('payroll-periods.preview-pdf', $payrollPeriod->id) }}';
 
   let flexibleMode = false;
   const expectedByEmployee = {};
@@ -217,14 +282,14 @@ document.addEventListener('DOMContentLoaded', function () {
       el.value = d[componentId];
     });
 
-    const taxEl = document.querySelector('[data-field="tax"][data-employee-id="' + employeeId + '"]');
-    if (taxEl) {
-      if (!(flexibleMode && taxEl.getAttribute('data-manual') === '1')) {
-        if (!(respectExisting && taxEl.value !== null && taxEl.value !== '')) {
-          taxEl.value = payload && payload.tax !== undefined ? payload.tax : '';
-        }
-      }
-    }
+    const t = payload && payload.taxes ? payload.taxes : {};
+    Object.keys(t).forEach(function (componentId) {
+      const el = document.querySelector('.readonly-tax[data-employee-id="' + employeeId + '"][data-component-id="' + componentId + '"]');
+      if (!el) return;
+      if (flexibleMode && el.getAttribute('data-manual') === '1') return;
+      if (respectExisting && el.value !== null && el.value !== '') return;
+      el.value = t[componentId];
+    });
 
     const nettoEl = document.querySelector('[data-field="netto"][data-employee-id="' + employeeId + '"]');
     if (nettoEl) {
@@ -343,27 +408,43 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     const expectedPayload = expectedByEmployee[employeeId] || {};
-    const expTax = expectedPayload.tax;
+    const expTaxes = expectedPayload.taxes || {};
     const expNetto = expectedPayload.netto;
 
-    const taxEl = document.querySelector('[data-field="tax"][data-employee-id="' + employeeId + '"]');
-    if (taxEl && expTax !== undefined) {
-      const currentTaxRaw = taxEl.value;
-      const currentTaxHasValue = currentTaxRaw !== null && currentTaxRaw !== '';
-      const shouldCheckTax = flexibleMode ? (taxEl.getAttribute('data-manual') === '1') : (validateAll ? currentTaxHasValue : currentTaxHasValue);
-      if (shouldCheckTax) {
-        const currentTax = parseIntSafe(taxEl.value);
-        if (currentTax === parseIntSafe(expTax)) {
-          clearWarning(taxEl);
-        } else {
-          showWarning(taxEl, `Seharusnya value PPh 21 adalah ${expTax}`);
+    document.querySelectorAll('.readonly-tax[data-employee-id="' + employeeId + '"]').forEach(function (el) {
+      const currentRaw = el.value;
+      const currentHasValue = currentRaw !== null && currentRaw !== '';
+
+      if (flexibleMode) {
+        if (el.getAttribute('data-manual') !== '1') {
+          clearWarning(el);
+          return;
         }
       } else {
-        clearWarning(taxEl);
+        if (!validateAll && !currentHasValue) {
+          clearWarning(el);
+          return;
+        }
+        if (validateAll && !currentHasValue) {
+          clearWarning(el);
+          return;
+        }
       }
-    } else {
-      clearWarning(taxEl);
-    }
+
+      const componentId = el.getAttribute('data-component-id');
+      const expected = expTaxes && componentId && Object.prototype.hasOwnProperty.call(expTaxes, componentId)
+        ? parseIntSafe(expTaxes[componentId])
+        : 0;
+
+      const current = parseIntSafe(el.value);
+      if (current === expected) {
+        clearWarning(el);
+        return;
+      }
+
+      const name = el.getAttribute('data-component-name') || 'Pajak';
+      showWarning(el, `Seharusnya value ${name} adalah ${expected}`);
+    });
 
     const nettoEl = document.querySelector('[data-field="netto"][data-employee-id="' + employeeId + '"]');
     if (nettoEl && expNetto !== undefined) {
@@ -392,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const btn = document.getElementById('btnFlexibleMode');
     if (btn) btn.textContent = flexibleMode ? 'Flexible Mode: ON' : 'Flexible Mode: OFF';
 
-    document.querySelectorAll('.readonly-deduction, [data-field="tax"], [data-field="netto"]').forEach(function (el) {
+    document.querySelectorAll('.readonly-deduction, .readonly-tax, [data-field="netto"]').forEach(function (el) {
       el.readOnly = !flexibleMode;
       if (flexibleMode) {
         el.classList.remove('bg-secondary');
@@ -465,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  document.querySelectorAll('.readonly-deduction, [data-field="tax"], [data-field="netto"]').forEach(function (el) {
+  document.querySelectorAll('.readonly-deduction, .readonly-tax, [data-field="netto"]').forEach(function (el) {
     el.addEventListener('input', function () {
       if (!flexibleMode) return;
       this.setAttribute('data-manual', '1');
@@ -493,9 +574,34 @@ document.addEventListener('DOMContentLoaded', function () {
   const publishBtn = document.getElementById('btnPublishPeriod');
   if (publishBtn) {
     publishBtn.addEventListener('click', function () {
-      const ok = confirm('Yakin ingin publish periode ini dan mengirim PDF? Aksi ini bersifat final.');
-      if (!ok) return;
-      alert('Fitur Publish & Send PDF belum diaktifkan.');
+      const modalEl = document.getElementById('confirmPublishModal');
+      if (!modalEl) return;
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    });
+  }
+
+  const btnConfirmPublishSend = document.getElementById('btnConfirmPublishSend');
+  if (btnConfirmPublishSend) {
+    btnConfirmPublishSend.addEventListener('click', function () {
+      btnConfirmPublishSend.disabled = true;
+      if (publishBtn) publishBtn.disabled = true;
+      const form = document.getElementById('publishSendForm');
+      if (form) form.submit();
+    });
+  }
+
+  const btnDoPreviewPdf = document.getElementById('btnDoPreviewPdf');
+  if (btnDoPreviewPdf) {
+    btnDoPreviewPdf.addEventListener('click', function () {
+      const sel = document.getElementById('preview_employee_id');
+      const employeeId = sel ? sel.value : '';
+      if (!employeeId) {
+        alert('Silakan pilih karyawan terlebih dahulu.');
+        return;
+      }
+      const url = previewPdfUrl + '?employee_id=' + encodeURIComponent(employeeId);
+      window.open(url, '_blank');
     });
   }
 });
