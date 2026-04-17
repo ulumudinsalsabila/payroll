@@ -622,10 +622,36 @@ document.addEventListener('DOMContentLoaded', function () {
   const btnConfirmPublishSend = document.getElementById('btnConfirmPublishSend');
   if (btnConfirmPublishSend) {
     btnConfirmPublishSend.addEventListener('click', function () {
+      const modalEl = document.getElementById('confirmPublishModal');
+      if (modalEl) {
+        try {
+          const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+          modalInstance.hide();
+        } catch (e) {
+        }
+      }
+
       btnConfirmPublishSend.disabled = true;
       if (publishBtn) publishBtn.disabled = true;
+
       const form = document.getElementById('publishSendForm');
-      if (form) form.submit();
+      if (!form) return;
+
+      if (typeof Swal === 'undefined') {
+        form.submit();
+        return;
+      }
+
+      Swal.fire({
+        title: 'Memproses Pengiriman...',
+        text: 'Sedang men-generate PDF dan mengirim email. Mohon jangan tutup halaman ini.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+          Swal.showLoading();
+          form.submit();
+        }
+      });
     });
   }
 
@@ -662,6 +688,38 @@ document.addEventListener('DOMContentLoaded', function () {
       window.open(url, '_blank');
     });
   }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof Swal === 'undefined') return;
+
+  @if (session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Proses Selesai!',
+      text: @json(session('success')),
+      confirmButtonText: 'Tutup',
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: 'btn btn-primary'
+      }
+    });
+  @endif
+
+  @if (session('error'))
+    Swal.fire({
+      icon: 'error',
+      title: 'Terjadi Kesalahan!',
+      text: @json(session('error')),
+      confirmButtonText: 'Tutup',
+      buttonsStyling: false,
+      customClass: {
+        confirmButton: 'btn btn-primary'
+      }
+    });
+  @endif
 });
 </script>
 @endpush

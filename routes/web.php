@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PayrollPeriodController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PayslipComponentController;
 use App\Http\Controllers\TerRateController;
 use App\Http\Controllers\ActivityLogController;
@@ -18,13 +19,6 @@ use App\Http\Controllers\ActivityLogController;
 |
 */
 
-Route::get('/', function () {
-    if (auth()->check()) {
-        return redirect()->route('payroll-periods.index');
-    }
-    return redirect()->route('login');
-});
-
 // Auth Routes
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
@@ -32,6 +26,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected HRD area
 Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+
     Route::post('payroll-periods/calculate-row', [PayrollPeriodController::class, 'calculateRow'])->name('payroll-periods.calculate-row');
     Route::post('payroll-periods/{payroll_period}/save-draft', [PayrollPeriodController::class, 'saveDraft'])->name('payroll-periods.save-draft');
     Route::post('payroll-periods/{payroll_period}/import-template', [PayrollPeriodController::class, 'importTemplate'])->name('payroll-periods.import-template');

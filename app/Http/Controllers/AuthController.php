@@ -33,7 +33,7 @@ class AuthController extends Controller
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
-            return redirect()->intended(route('payroll-periods.index'));
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->with('error', 'Email atau password salah.')->withInput();

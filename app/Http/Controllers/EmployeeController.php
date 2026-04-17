@@ -32,6 +32,7 @@ class EmployeeController extends Controller
         $data = $request->validate([
             'name' => ['required','string','max:255'],
             'email' => ['nullable','email','max:255', Rule::unique('employees', 'email')],
+            'is_active' => ['nullable', 'boolean'],
             'position' => ['required','string','max:255'],
             'department' => ['required','string','max:255'],
             'address' => ['nullable','string'],
@@ -46,6 +47,7 @@ class EmployeeController extends Controller
         ]);
 
         $data['leave_balance'] = $data['leave_balance'] ?? 0;
+        $data['is_active'] = array_key_exists('is_active', $data) ? (bool) $data['is_active'] : true;
         $data['employee_code'] = $this->generateEmployeeCode();
 
         $employee = Employee::create($data);
@@ -72,6 +74,7 @@ class EmployeeController extends Controller
         $data = $request->validate([
             'name' => ['required','string','max:255'],
             'email' => ['nullable','email','max:255', Rule::unique('employees', 'email')->ignore($employee->id, 'id')],
+            'is_active' => ['required', 'boolean'],
             'position' => ['required','string','max:255'],
             'department' => ['required','string','max:255'],
             'address' => ['nullable','string'],

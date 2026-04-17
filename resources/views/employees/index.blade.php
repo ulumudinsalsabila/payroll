@@ -89,6 +89,7 @@
                   data-employee_code="{{ $e->employee_code }}"
                   data-name="{{ $e->name }}"
                   data-email="{{ $e->email }}"
+                  data-is_active="{{ $e->is_active ? 1 : 0 }}"
                   data-position="{{ $e->position }}"
                   data-department="{{ $e->department }}"
                   data-address="{{ $e->address }}"
@@ -145,6 +146,13 @@
             <div class="col-md-6">
               <label class="form-label">Email (Opsional)</label>
               <input type="email" name="email" id="email" class="form-control" placeholder="nama@perusahaan.com">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Status Karyawan</label>
+              <select name="is_active" id="is_active" class="form-select" required>
+                <option value="1">Active</option>
+                <option value="0">Non-Active</option>
+              </select>
             </div>
             <div class="col-md-6">
               <label class="form-label">Posisi</label>
@@ -295,6 +303,7 @@ $(document).ready(function() {
     
     $('#name').val(row.data('name'));
     $('#email').val(row.data('email'));
+    $('#is_active').val(String(row.data('is_active')) === '1' ? '1' : '0');
     $('#position').val(row.data('position'));
     $('#department').val(row.data('department'));
     $('#address').val(row.data('address'));
@@ -326,6 +335,7 @@ $(document).ready(function() {
     
     $('#name').val('');
     $('#email').val('');
+    $('#is_active').val('1');
     $('#position').val('');
     $('#department').val('');
     $('#address').val('');

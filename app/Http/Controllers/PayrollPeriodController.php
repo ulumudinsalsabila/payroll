@@ -71,7 +71,7 @@ class PayrollPeriodController extends Controller
     public function show(string $id)
     {
         $payrollPeriod = PayrollPeriod::with(['payslips.employee', 'payslips.details'])->findOrFail($id);
-        $employees = Employee::orderBy('name')->get();
+        $employees = Employee::where('is_active', true)->orderBy('name')->get();
         $earnings = PayslipComponent::where('is_active', true)->where('type', 'earning')->orderBy('name')->get();
         $deductions = PayslipComponent::where('is_active', true)->where('type', 'deduction')->orderBy('name')->get();
         $taxes = PayslipComponent::where('is_active', true)->where('type', 'tax')->orderBy('name')->get();
@@ -111,7 +111,7 @@ class PayrollPeriodController extends Controller
         $payrollPeriod = PayrollPeriod::findOrFail($id);
         $mode = (string) $request->query('mode', 'empty');
 
-        $employees = Employee::orderBy('name')->get();
+        $employees = Employee::where('is_active', true)->orderBy('name')->get();
         $components = PayslipComponent::query()
             ->where('is_active', true)
             ->whereIn('type', ['earning', 'deduction', 'tax'])
@@ -235,7 +235,7 @@ class PayrollPeriodController extends Controller
                     continue;
                 }
 
-                $employee = Employee::where('employee_code', $employeeCode)->first();
+                $employee = Employee::where('employee_code', $employeeCode)->where('is_active', true)->first();
                 if (!$employee) {
                     $skippedCodes[] = $employeeCode;
                     continue;

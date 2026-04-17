@@ -18,6 +18,7 @@ class Employee extends Model
         'employee_code',
         'name',
         'email',
+        'is_active',
         'position',
         'department',
         'address',
@@ -34,6 +35,7 @@ class Employee extends Model
     protected $casts = [
         'join_date' => 'date',
         'leave_balance' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     public function payslips()
