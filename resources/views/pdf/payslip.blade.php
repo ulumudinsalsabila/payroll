@@ -91,8 +91,24 @@
     $basicDetail = $earningDetails->first(fn($d) => (string) optional($d->component)->name === 'Gaji Pokok');
     $basicAmount = $basicDetail ? (int) $basicDetail->amount : (int) (optional($payslip)->basic_salary ?? 0);
 
-    $otherEarnings = $earningDetails->filter(fn($d) => (string) optional($d->component)->name !== 'Gaji Pokok');
-    $lemburBonusTotal = (int) $otherEarnings->sum('amount');
+    $otherEarningLineItems = $earningDetails
+        ->filter(fn($d) => (string) optional($d->component)->name !== 'Gaji Pokok')
+        ->filter(fn($d) => (int) (optional($d)->amount ?? 0) !== 0)
+        ->sortBy(function ($d) {
+            return strtolower((string) (optional($d->component)->name ?? ''));
+        });
+
+    $deductionLineItems = $deductionDetails
+        ->filter(fn($d) => (int) (optional($d)->amount ?? 0) !== 0)
+        ->sortBy(function ($d) {
+            return strtolower((string) (optional($d->component)->name ?? ''));
+        });
+
+    $taxLineItems = $taxDetails
+        ->filter(fn($d) => (int) (optional($d)->amount ?? 0) !== 0)
+        ->sortBy(function ($d) {
+            return strtolower((string) (optional($d->component)->name ?? ''));
+        });
 
     $totalBruto = (int) (optional($payslip)->total_earnings ?? $earningDetails->sum('amount'));
     $totalPotongan = (int) (optional($payslip)->total_deductions ?? $deductionDetails->sum('amount'));
@@ -228,14 +244,16 @@
                     <td class="col-label">Pendapatan</td>
                     <td class="col-item">Gaji Pokok</td>
                     <td class="col-unit">{{ (int) (optional($payslip)->work_days ?? 0) }}</td>
-                    <td class="col-amt">{{ $fmtNumber($basicAmount) }}</td>
+                    <td class="col-amt">{{ $fmtRupiah($basicAmount) }}</td>
                 </tr>
-                <tr>
-                    <td class="col-label"></td>
-                    <td class="col-item">Lembur dan Bonus</td>
-                    <td class="col-unit">0</td>
-                    <td class="col-amt">{{ $fmtRupiah($lemburBonusTotal) }}</td>
-                </tr>
+                @foreach($otherEarningLineItems as $detail)
+                    <tr>
+                        <td class="col-label"></td>
+                        <td class="col-item">{{ (string) optional($detail->component)->name }}</td>
+                        <td class="col-unit"></td>
+                        <td class="col-amt">{{ $fmtRupiah((int) (optional($detail)->amount ?? 0)) }}</td>
+                    </tr>
+                @endforeach
                 <tr>
                     <td class="col-label"></td>
                     <td class="col-item fw-bold">Total Penghasilan Bruto</td>
@@ -245,19 +263,16 @@
 
                 <tr><td colspan="4" style="height: 10px;"></td></tr>
 
-                @php($potonganStart = true)
-                @foreach($deductionDetails as $detail)
-                    @php($pct = optional($detail->component)->percentage)
+                @foreach($deductionLineItems as $detail)
                     <tr>
-                        <td class="col-label">{{ $potonganStart ? 'Potongan' : '' }}</td>
+                        <td class="col-label">{{ $loop->first ? 'Potongan' : '' }}</td>
                         <td class="col-item">{{ (string) optional($detail->component)->name }}</td>
-                        <td class="col-unit">{{ $pct !== null ? $fmtPercent($pct) : '' }}</td>
+                        <td class="col-unit">{{ optional($detail->component)->percentage !== null ? $fmtPercent(optional($detail->component)->percentage) : '' }}</td>
                         <td class="col-amt">{{ $fmtRupiah((int) $detail->amount) }}</td>
                     </tr>
-                    @php($potonganStart = false)
                 @endforeach
 
-                @if($deductionDetails->count() === 0)
+                @if($deductionLineItems->count() === 0)
                     <tr>
                         <td class="col-label">Potongan</td>
                         <td class="col-item">&nbsp;</td>
@@ -281,10 +296,39 @@
                     <td class="col-unit"></td>
                     <td class="col-amt fw-bold">{{ $fmtRupiah($kenaPajak) }}</td>
                 </tr>
+
+                @foreach($taxLineItems as $detail)
+                    @php
+                        $taxName = (string) (optional($detail->component)->name ?? 'Pajak');
+                        $pct = optional($detail->component)->percentage;
+                        $pctText = '';
+                        if ($taxName === 'PPh Pasal 21' && $terPercent !== null) {
+                            $pctText = number_format($terPercent, 2, ',', '.') . '%';
+                        } elseif ($pct !== null) {
+                            $pctText = $fmtPercent($pct);
+                        }
+                    @endphp
+                    <tr>
+                        <td class="col-label">{{ $loop->first ? 'Pajak' : '' }}</td>
+                        <td class="col-item">{{ $taxName }}</td>
+                        <td class="col-unit">{{ $pctText }}</td>
+                        <td class="col-amt">{{ $fmtRupiah((int) (optional($detail)->amount ?? 0)) }}</td>
+                    </tr>
+                @endforeach
+
+                @if($taxLineItems->count() === 0)
+                    <tr>
+                        <td class="col-label">Pajak</td>
+                        <td class="col-item">&nbsp;</td>
+                        <td class="col-unit">&nbsp;</td>
+                        <td class="col-amt">&nbsp;</td>
+                    </tr>
+                @endif
+
                 <tr>
                     <td class="col-label"></td>
-                    <td class="col-item fw-bold">Total Pajak PPh Pasal 21</td>
-                    <td class="col-unit">{{ $terPercent !== null ? number_format($terPercent, 2, ',', '.') . '%' : '' }}</td>
+                    <td class="col-item fw-bold">Total Pajak</td>
+                    <td class="col-unit"></td>
                     <td class="col-amt">{{ $fmtRupiah($totalPajak) }}</td>
                 </tr>
                 <tr>
