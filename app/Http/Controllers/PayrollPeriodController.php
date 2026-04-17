@@ -150,6 +150,10 @@ class PayrollPeriodController extends Controller
 
         $period = PayrollPeriod::findOrFail($payrollPeriod);
 
+        if ($period->status !== 'draft') {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Periode sudah dipublish. Silakan kembalikan ke draft terlebih dahulu jika ingin mengubah data.');
+        }
+
         $sheets = Excel::toArray(new PayslipTemplateImport(), $request->file('file'));
         $rows = $sheets[0] ?? [];
         if (!is_array($rows) || count($rows) < 2) {
@@ -424,6 +428,36 @@ class PayrollPeriodController extends Controller
         return redirect()->route('payroll-periods.show', $period->id)->with('success', $msg);
     }
 
+    public function reopenDraft(Request $request, string $payrollPeriod)
+    {
+        $period = PayrollPeriod::findOrFail($payrollPeriod);
+
+        if ($period->status !== 'published') {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Periode ini tidak dalam status published.');
+        }
+
+        $before = $period->toArray();
+        $period->status = 'draft';
+        $period->published_at = null;
+        $period->save();
+
+        Payslip::where('payroll_period_id', $period->id)->update(['status' => 'draft']);
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'REOPEN_DRAFT',
+            'module' => 'PAYROLL_PERIOD',
+            'target_id' => $period->id,
+            'description' => 'Mengembalikan periode gaji ke status draft',
+            'old_values' => $before,
+            'new_values' => $period->toArray(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        return redirect()->route('payroll-periods.show', $period->id)->with('success', 'Periode berhasil dikembalikan ke draft.');
+    }
+
     public function calculateRow(Request $request)
     {
         $validated = $request->validate([
@@ -459,6 +493,10 @@ class PayrollPeriodController extends Controller
         ]);
 
         $period = PayrollPeriod::findOrFail($payrollPeriod);
+
+        if ($period->status !== 'draft') {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Periode sudah dipublish. Silakan kembalikan ke draft terlebih dahulu jika ingin mengubah data.');
+        }
         $payslips = $request->input('payslips', []);
         $workDaysInput = $request->input('work_days', []);
         $nettoInput = $request->input('netto', []);

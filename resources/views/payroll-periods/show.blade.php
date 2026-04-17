@@ -14,6 +14,30 @@
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
 @endif
+
+@if ($payrollPeriod->status !== 'draft')
+<div class="modal fade" id="confirmReopenDraftModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kembalikan ke Draft</h5>
+                <button type="button" class="btn btn-sm btn-icon" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Yakin ingin mengubah status periode ini kembali menjadi draft? Setelah itu kamu bisa mengubah data dan publish ulang.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-warning" id="btnConfirmReopenDraft">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Kembalikan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 @if (session('error'))
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
     {{ session('error') }}
@@ -58,9 +82,11 @@
                     </ul>
                 </div>
 
-                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importExcelModal">
-                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Import Excel
-                </button>
+                @if ($payrollPeriod->status === 'draft')
+                    <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Import Excel
+                    </button>
+                @endif
 
                 <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#previewPdfModal">
                     <i class="bi bi-eye me-2"></i>Preview PDF
@@ -71,6 +97,13 @@
                         <i class="bi bi-send-check me-2"></i>Publish &amp; Send PDF
                     </button>
                     <form id="publishSendForm" method="POST" action="{{ route('payroll-periods.publish-send', ['payroll_period' => $payrollPeriod->id]) }}" class="d-none">
+                        @csrf
+                    </form>
+                @else
+                    <button type="button" class="btn btn-warning" id="btnReopenDraft">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Kembalikan ke Draft
+                    </button>
+                    <form id="reopenDraftForm" method="POST" action="{{ route('payroll-periods.reopen-draft', ['payroll_period' => $payrollPeriod->id]) }}" class="d-none">
                         @csrf
                     </form>
                 @endif
@@ -84,9 +117,9 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Input Gaji Massal (Draft)</h3>
+        <h3 class="card-title">Input Gaji Massal ({{ $payrollPeriod->status === 'draft' ? 'Draft' : 'Published' }})</h3>
         <div class="card-toolbar">
-            <button type="button" class="btn btn-warning btn-sm" id="btnFlexibleMode">
+            <button type="button" class="btn btn-warning btn-sm" id="btnFlexibleMode" @disabled($payrollPeriod->status !== 'draft')>
                 Flexible Mode: OFF
             </button>
         </div>
@@ -117,28 +150,28 @@
                             <tr>
                                 <td class="fw-semibold">{{ $employee->name }}</td>
                                 <td>
-                                    <input type="number" class="form-control form-control-sm" name="work_days[{{ $employee->id }}]" value="{{ old('work_days.' . $employee->id, $draftWorkDays[$employee->id] ?? '') }}" min="0">
+                                    <input type="number" class="form-control form-control-sm" name="work_days[{{ $employee->id }}]" value="{{ old('work_days.' . $employee->id, $draftWorkDays[$employee->id] ?? '') }}" min="0" @disabled($payrollPeriod->status !== 'draft')>
                                 </td>
 
                                 @foreach($earnings as $earning)
                                     <td>
-                                        <input type="number" class="form-control form-control-sm input-earning" name="payslips[{{ $employee->id }}][{{ $earning->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $earning->id, $draftAmounts[$employee->id][$earning->id] ?? '') }}" min="0" data-employee-id="{{ $employee->id }}" data-component-id="{{ $earning->id }}">
+                                        <input type="number" class="form-control form-control-sm input-earning" name="payslips[{{ $employee->id }}][{{ $earning->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $earning->id, $draftAmounts[$employee->id][$earning->id] ?? '') }}" min="0" data-employee-id="{{ $employee->id }}" data-component-id="{{ $earning->id }}" @disabled($payrollPeriod->status !== 'draft')>
                                     </td>
                                 @endforeach
 
                                 @foreach($deductions as $deduction)
                                     <td>
-                                        <input type="number" class="form-control form-control-sm bg-secondary readonly-deduction" name="payslips[{{ $employee->id }}][{{ $deduction->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $deduction->id, $draftAmounts[$employee->id][$deduction->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-component-id="{{ $deduction->id }}" data-component-name="{{ $deduction->name }}" data-percentage="{{ $deduction->percentage }}" data-max-cap="{{ $deduction->max_cap }}">
+                                        <input type="number" class="form-control form-control-sm bg-secondary readonly-deduction" name="payslips[{{ $employee->id }}][{{ $deduction->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $deduction->id, $draftAmounts[$employee->id][$deduction->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-component-id="{{ $deduction->id }}" data-component-name="{{ $deduction->name }}" data-percentage="{{ $deduction->percentage }}" data-max-cap="{{ $deduction->max_cap }}" @disabled($payrollPeriod->status !== 'draft')>
                                     </td>
                                 @endforeach
 
                                 @foreach($taxes as $tax)
                                     <td>
-                                        <input type="number" class="form-control form-control-sm bg-secondary readonly-tax" name="payslips[{{ $employee->id }}][{{ $tax->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $tax->id, $draftAmounts[$employee->id][$tax->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-component-id="{{ $tax->id }}" data-component-name="{{ $tax->name }}" data-field="tax_component">
+                                        <input type="number" class="form-control form-control-sm bg-secondary readonly-tax" name="payslips[{{ $employee->id }}][{{ $tax->id }}]" value="{{ old('payslips.' . $employee->id . '.' . $tax->id, $draftAmounts[$employee->id][$tax->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-component-id="{{ $tax->id }}" data-component-name="{{ $tax->name }}" data-field="tax_component" @disabled($payrollPeriod->status !== 'draft')>
                                     </td>
                                 @endforeach
                                 <td>
-                                    <input type="number" class="form-control form-control-sm bg-secondary fw-bold" name="netto[{{ $employee->id }}]" value="{{ old('netto.' . $employee->id, $draftNetto[$employee->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-field="netto">
+                                    <input type="number" class="form-control form-control-sm bg-secondary fw-bold" name="netto[{{ $employee->id }}]" value="{{ old('netto.' . $employee->id, $draftNetto[$employee->id] ?? '') }}" min="0" readonly data-employee-id="{{ $employee->id }}" data-field="netto" @disabled($payrollPeriod->status !== 'draft')>
                                 </td>
                             </tr>
                         @endforeach
@@ -146,9 +179,11 @@
                 </table>
             </div>
         </div>
-        <div class="card-footer d-flex justify-content-end">
-            <button type="submit" class="btn btn-primary">Simpan Draft</button>
-        </div>
+        @if ($payrollPeriod->status === 'draft')
+            <div class="card-footer d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">Simpan Draft</button>
+            </div>
+        @endif
     </form>
 </div>
 
@@ -251,6 +286,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const calcUrl = '{{ route('payroll-periods.calculate-row') }}';
   const BASIC_SALARY_COMPONENT_ID = @json($basicSalaryComponentId ?? null);
   const previewPdfUrl = '{{ route('payroll-periods.preview-pdf', $payrollPeriod->id) }}';
+  const IS_DRAFT = @json($payrollPeriod->status === 'draft');
 
   let flexibleMode = false;
   const expectedByEmployee = {};
@@ -561,15 +597,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  setFlexibleMode(false, { skipRecalc: true });
+  if (IS_DRAFT) {
+    setFlexibleMode(false, { skipRecalc: true });
 
-  const initEmployeeIds = new Set();
-  document.querySelectorAll('.input-earning[data-employee-id]').forEach(function (el) {
-    initEmployeeIds.add(el.getAttribute('data-employee-id'));
-  });
-  initEmployeeIds.forEach(function (eid) {
-    requestCalc(eid, { respectExisting: true, validateAll: true });
-  });
+    const initEmployeeIds = new Set();
+    document.querySelectorAll('.input-earning[data-employee-id]').forEach(function (el) {
+      initEmployeeIds.add(el.getAttribute('data-employee-id'));
+    });
+    initEmployeeIds.forEach(function (eid) {
+      requestCalc(eid, { respectExisting: true, validateAll: true });
+    });
+  }
 
   const publishBtn = document.getElementById('btnPublishPeriod');
   if (publishBtn) {
@@ -587,6 +625,26 @@ document.addEventListener('DOMContentLoaded', function () {
       btnConfirmPublishSend.disabled = true;
       if (publishBtn) publishBtn.disabled = true;
       const form = document.getElementById('publishSendForm');
+      if (form) form.submit();
+    });
+  }
+
+  const reopenBtn = document.getElementById('btnReopenDraft');
+  if (reopenBtn) {
+    reopenBtn.addEventListener('click', function () {
+      const modalEl = document.getElementById('confirmReopenDraftModal');
+      if (!modalEl) return;
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      modal.show();
+    });
+  }
+
+  const btnConfirmReopenDraft = document.getElementById('btnConfirmReopenDraft');
+  if (btnConfirmReopenDraft) {
+    btnConfirmReopenDraft.addEventListener('click', function () {
+      btnConfirmReopenDraft.disabled = true;
+      if (reopenBtn) reopenBtn.disabled = true;
+      const form = document.getElementById('reopenDraftForm');
       if (form) form.submit();
     });
   }

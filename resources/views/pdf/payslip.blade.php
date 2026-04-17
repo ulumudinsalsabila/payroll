@@ -168,7 +168,7 @@
                 <tr>
                     <td class="label">Nomor PT</td>
                     <td class="colon">:</td>
-                    <td>{{ (string) (optional($employee)->employee_code ?? '-') }}</td>
+                    <td>35 159 057 646</td>
                 </tr>
                 <tr>
                     <td class="label">Periode</td>

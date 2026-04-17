@@ -92,6 +92,9 @@
                   data-position="{{ $e->position }}"
                   data-department="{{ $e->department }}"
                   data-address="{{ $e->address }}"
+                  data-bank_name="{{ $e->bank_name }}"
+                  data-bank_account_name="{{ $e->bank_account_name }}"
+                  data-bank_account_number="{{ $e->bank_account_number }}"
                   data-join_date="{{ $e->join_date?->format('Y-m-d') }}"
                   data-leave_balance="{{ $e->leave_balance }}"
                   data-npwp_number="{{ $e->npwp_number }}"
@@ -154,6 +157,18 @@
             <div class="col-12">
               <label class="form-label">Alamat</label>
               <textarea name="address" id="address" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Bank (Opsional)</label>
+              <input type="text" name="bank_name" id="bank_name" class="form-control" placeholder="BCA / Mandiri / BRI ...">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Nama Rekening (Opsional)</label>
+              <input type="text" name="bank_account_name" id="bank_account_name" class="form-control" placeholder="Nama pemilik rekening">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Nomor Rekening (Opsional)</label>
+              <input type="text" name="bank_account_number" id="bank_account_number" class="form-control" placeholder="1234567890">
             </div>
             <div class="col-md-6">
               <label class="form-label">Tanggal Masuk</label>
@@ -283,6 +298,9 @@ $(document).ready(function() {
     $('#position').val(row.data('position'));
     $('#department').val(row.data('department'));
     $('#address').val(row.data('address'));
+    $('#bank_name').val(row.data('bank_name'));
+    $('#bank_account_name').val(row.data('bank_account_name'));
+    $('#bank_account_number').val(row.data('bank_account_number'));
     $('#join_date').val(row.data('join_date'));
     $('#npwp_number').val(row.data('npwp_number'));
     $('#ptkp_status').val(row.data('ptkp_status'));
@@ -311,6 +329,9 @@ $(document).ready(function() {
     $('#position').val('');
     $('#department').val('');
     $('#address').val('');
+    $('#bank_name').val('');
+    $('#bank_account_name').val('');
+    $('#bank_account_number').val('');
     $('#join_date').val('');
     $('#npwp_number').val('');
     $('#ptkp_status').val('');
