@@ -19,6 +19,8 @@ class PayslipTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
     private ?PayrollPeriod $previousPeriod;
 
     private array $workDaysByEmployee = [];
+    private array $leaveJointByEmployee = [];
+    private array $leavePersonalByEmployee = [];
     private array $nettoByEmployee = [];
     private array $amountsByEmployee = [];
 
@@ -43,6 +45,8 @@ class PayslipTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
 
             foreach ($payslips as $payslip) {
                 $this->workDaysByEmployee[$payslip->employee_id] = (int) ($payslip->work_days ?? 0);
+                $this->leaveJointByEmployee[$payslip->employee_id] = (int) ($payslip->leave_joint_days ?? 0);
+                $this->leavePersonalByEmployee[$payslip->employee_id] = (int) ($payslip->leave_personal_days ?? 0);
                 $this->nettoByEmployee[$payslip->employee_id] = (int) ($payslip->net_salary ?? 0);
                 foreach ($payslip->details as $detail) {
                     $this->amountsByEmployee[$payslip->employee_id][$detail->payslip_component_id] = (int) ($detail->amount ?? 0);
@@ -57,7 +61,7 @@ class PayslipTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
 
     public function headings(): array
     {
-        $headings = ['Kode Karyawan', 'Nama Karyawan', 'Hari Kerja'];
+        $headings = ['Kode Karyawan', 'Nama Karyawan', 'Hari Kerja', 'Cuti Bersama', 'Cuti Pribadi'];
 
         foreach ($this->components as $component) {
             $headings[] = (string) $component->name;
@@ -77,6 +81,8 @@ class PayslipTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
                 (string) $employee->employee_code,
                 (string) $employee->name,
                 $this->previousPeriod ? ($this->workDaysByEmployee[$employee->id] ?? 0) : 0,
+                $this->previousPeriod ? ($this->leaveJointByEmployee[$employee->id] ?? 0) : 0,
+                $this->previousPeriod ? ($this->leavePersonalByEmployee[$employee->id] ?? 0) : 0,
             ];
 
             foreach ($this->components as $component) {
@@ -96,7 +102,7 @@ class PayslipTemplateExport implements FromArray, WithHeadings, WithStyles, Shou
 
     public function styles(Worksheet $sheet): array
     {
-        $colCount = 3 + $this->components->count() + 1;
+        $colCount = 5 + $this->components->count() + 1;
         $lastCol = Coordinate::stringFromColumnIndex($colCount);
         $range = 'A1:' . $lastCol . '1';
 

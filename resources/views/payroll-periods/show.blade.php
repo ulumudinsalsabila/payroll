@@ -133,6 +133,8 @@
                         <tr>
                             <th style="min-width: 220px;">Nama Karyawan</th>
                             <th style="min-width: 140px;">Hari Kerja</th>
+                            <th style="min-width: 140px;">Cuti Bersama</th>
+                            <th style="min-width: 140px;">Cuti Pribadi</th>
                             @foreach($earnings as $earning)
                                 <th style="min-width: 160px;">{{ $earning->name }}</th>
                             @endforeach
@@ -151,6 +153,18 @@
                                 <td class="fw-semibold">{{ $employee->name }}</td>
                                 <td>
                                     <input type="number" class="form-control form-control-sm" name="work_days[{{ $employee->id }}]" value="{{ old('work_days.' . $employee->id, $draftWorkDays[$employee->id] ?? '') }}" min="0" @disabled($payrollPeriod->status !== 'draft')>
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm @error('leave_joint_days.' . $employee->id) is-invalid @enderror" name="leave_joint_days[{{ $employee->id }}]" value="{{ old('leave_joint_days.' . $employee->id, $draftLeaveJoint[$employee->id] ?? '') }}" min="0" @disabled($payrollPeriod->status !== 'draft')>
+                                    @error('leave_joint_days.' . $employee->id)
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </td>
+                                <td>
+                                    <input type="number" class="form-control form-control-sm @error('leave_personal_days.' . $employee->id) is-invalid @enderror" name="leave_personal_days[{{ $employee->id }}]" value="{{ old('leave_personal_days.' . $employee->id, $draftLeavePersonal[$employee->id] ?? '') }}" min="0" @disabled($payrollPeriod->status !== 'draft')>
+                                    @error('leave_personal_days.' . $employee->id)
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </td>
 
                                 @foreach($earnings as $earning)

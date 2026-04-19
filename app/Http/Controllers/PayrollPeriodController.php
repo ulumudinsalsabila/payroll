@@ -7,6 +7,7 @@ use App\Imports\PayslipTemplateImport;
 use App\Models\PayrollPeriod;
 use App\Models\ActivityLog;
 use App\Models\Employee;
+use App\Models\LeaveTransaction;
 use App\Models\Payslip;
 use App\Models\PayslipComponent;
 use App\Models\PayslipDetail;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Maatwebsite\Excel\Facades\Excel;
@@ -25,6 +27,38 @@ class PayrollPeriodController extends Controller
 {
     public function __construct(private readonly PayrollService $payrollService)
     {
+    }
+
+    private function recalculateLeaveBalance(string $employeeId): int
+    {
+        $txs = LeaveTransaction::query()
+            ->where('employee_id', $employeeId)
+            ->orderBy('transaction_date')
+            ->orderBy('created_at')
+            ->get(['type', 'days']);
+
+        $balance = 0;
+        foreach ($txs as $tx) {
+            $type = strtolower(trim((string) $tx->type));
+            $days = max((int) $tx->days, 0);
+
+            if ($type === 'reset') {
+                $balance = $days;
+                continue;
+            }
+
+            if ($type === 'accrual') {
+                $balance += $days;
+            } elseif ($type === 'joint' || $type === 'personal') {
+                $balance -= $days;
+            }
+
+            if ($balance < 0) {
+                $balance = 0;
+            }
+        }
+
+        return max($balance, 0);
     }
 
     public function index()
@@ -89,10 +123,14 @@ class PayrollPeriodController extends Controller
         $draftWorkDays = [];
         $draftNetto = [];
         $draftAmounts = [];
+        $draftLeaveJoint = [];
+        $draftLeavePersonal = [];
 
         foreach ($payrollPeriod->payslips as $payslip) {
             $draftWorkDays[$payslip->employee_id] = $payslip->work_days;
             $draftNetto[$payslip->employee_id] = $payslip->net_salary;
+            $draftLeaveJoint[$payslip->employee_id] = (int) ($payslip->leave_joint_days ?? 0);
+            $draftLeavePersonal[$payslip->employee_id] = (int) ($payslip->leave_personal_days ?? 0);
 
             foreach ($payslip->details as $detail) {
                 $draftAmounts[$payslip->employee_id][$detail->payslip_component_id] = $detail->amount;
@@ -103,7 +141,7 @@ class PayrollPeriodController extends Controller
             }
         }
 
-        return view('payroll-periods.show', compact('payrollPeriod', 'employees', 'earnings', 'deductions', 'taxes', 'draftWorkDays', 'draftNetto', 'draftAmounts', 'basicSalaryComponentId'));
+        return view('payroll-periods.show', compact('payrollPeriod', 'employees', 'earnings', 'deductions', 'taxes', 'draftWorkDays', 'draftNetto', 'draftAmounts', 'draftLeaveJoint', 'draftLeavePersonal', 'basicSalaryComponentId'));
     }
 
     public function downloadTemplate(Request $request, string $id)
@@ -184,7 +222,17 @@ class PayrollPeriodController extends Controller
             return redirect()->back()->with('error', 'Format kolom awal tidak sesuai template.');
         }
 
-        $componentHeaders = array_slice($headers, 3, $lastHeaderIndex - 3);
+        $componentStartIndex = 3;
+        $hasLeaveColumns = ($headers[3] ?? '') === 'Cuti Bersama' && ($headers[4] ?? '') === 'Cuti Pribadi';
+        if ($hasLeaveColumns) {
+            $componentStartIndex = 5;
+        }
+
+        if ($lastHeaderIndex < $componentStartIndex) {
+            return redirect()->back()->with('error', 'Format kolom tidak sesuai template.');
+        }
+
+        $componentHeaders = array_slice($headers, $componentStartIndex, $lastHeaderIndex - $componentStartIndex);
         $components = PayslipComponent::query()
             ->where('is_active', true)
             ->whereIn('type', ['earning', 'deduction', 'tax'])
@@ -195,7 +243,7 @@ class PayrollPeriodController extends Controller
 
         $columnToComponentId = [];
         foreach ($componentHeaders as $idx => $name) {
-            $colIndex = 3 + $idx;
+            $colIndex = $componentStartIndex + $idx;
             $name = trim((string) $name);
             if ($name === '') {
                 return redirect()->back()->with('error', 'Ada kolom komponen kosong di header template.');
@@ -212,86 +260,118 @@ class PayrollPeriodController extends Controller
 
         $skippedCodes = [];
         $importedRows = 0;
+        $leaveOverBalanceErrors = [];
 
-        DB::transaction(function () use (
-            $rows,
-            $lastHeaderIndex,
-            $columnToComponentId,
-            $componentTypeMap,
-            $basicSalaryComponentId,
-            $period,
-            $paymentDate,
-            &$skippedCodes,
-            &$importedRows
-        ) {
-            for ($r = 1; $r < count($rows); $r++) {
-                $row = $rows[$r] ?? [];
-                if (!is_array($row) || count($row) === 0) {
-                    continue;
-                }
-
-                $employeeCode = isset($row[0]) ? trim((string) $row[0]) : '';
-                if ($employeeCode === '') {
-                    continue;
-                }
-
-                $employee = Employee::where('employee_code', $employeeCode)->where('is_active', true)->first();
-                if (!$employee) {
-                    $skippedCodes[] = $employeeCode;
-                    continue;
-                }
-
-                $workDays = $this->parseExcelInt($row[2] ?? 0);
-                $netto = $this->parseExcelInt($row[$lastHeaderIndex] ?? 0);
-
-                $componentValues = [];
-                foreach ($columnToComponentId as $colIndex => $componentId) {
-                    $componentValues[$componentId] = $this->parseExcelInt($row[$colIndex] ?? 0);
-                }
-
-                $totalEarnings = 0;
-                $totalDeductions = 0;
-                $totalTax = 0;
-                $basicSalary = 0;
-
-                foreach ($componentValues as $componentId => $amount) {
-                    $type = $componentTypeMap[$componentId] ?? null;
-                    if ($type === 'earning') {
-                        $totalEarnings += $amount;
-                    } elseif ($type === 'deduction') {
-                        $totalDeductions += $amount;
-                    } elseif ($type === 'tax') {
-                        $totalTax += $amount;
+        try {
+            DB::transaction(function () use (
+                $rows,
+                $lastHeaderIndex,
+                $hasLeaveColumns,
+                $columnToComponentId,
+                $componentTypeMap,
+                $basicSalaryComponentId,
+                $period,
+                $paymentDate,
+                &$skippedCodes,
+                &$importedRows,
+                &$leaveOverBalanceErrors
+            ) {
+                for ($r = 1; $r < count($rows); $r++) {
+                    $row = $rows[$r] ?? [];
+                    if (!is_array($row) || count($row) === 0) {
+                        continue;
                     }
-                    if ($basicSalaryComponentId && $componentId === $basicSalaryComponentId) {
-                        $basicSalary = $amount;
+
+                    $employeeCode = isset($row[0]) ? trim((string) $row[0]) : '';
+                    if ($employeeCode === '') {
+                        continue;
                     }
-                }
 
-                $payslip = Payslip::updateOrCreate(
-                    ['payroll_period_id' => $period->id, 'employee_id' => $employee->id],
-                    [
-                        'payment_date' => $paymentDate,
-                        'work_days' => $workDays,
-                        'basic_salary' => $basicSalary,
-                        'total_earnings' => $totalEarnings,
-                        'total_deductions' => $totalDeductions,
-                        'tax_amount' => $totalTax,
-                        'net_salary' => $netto,
-                        'status' => 'draft',
-                    ]
-                );
+                    $employee = Employee::where('employee_code', $employeeCode)->where('is_active', true)->first();
+                    if (!$employee) {
+                        $skippedCodes[] = $employeeCode;
+                        continue;
+                    }
 
-                foreach ($componentValues as $componentId => $amount) {
-                    PayslipDetail::updateOrCreate(
-                        ['payslip_id' => $payslip->id, 'payslip_component_id' => $componentId],
-                        ['amount' => $amount]
+                    $workDays = $this->parseExcelInt($row[2] ?? 0);
+                    $leaveJoint = $hasLeaveColumns ? $this->parseExcelInt($row[3] ?? 0) : 0;
+                    $leavePersonal = $hasLeaveColumns ? $this->parseExcelInt($row[4] ?? 0) : 0;
+                    $netto = $this->parseExcelInt($row[$lastHeaderIndex] ?? 0);
+
+                    if ($hasLeaveColumns) {
+                        $used = max($leaveJoint, 0) + max($leavePersonal, 0);
+                        if ($used > 0) {
+                            $entitlement = $period->month === '01' ? 12 : max((int) ($employee->leave_balance ?? 0), 0);
+                            if ($used > $entitlement) {
+                                $message = 'Total cuti (' . $used . ') melebihi saldo cuti (' . $entitlement . ').';
+                                $leaveOverBalanceErrors['leave_joint_days.' . $employee->id] = $message;
+                                $leaveOverBalanceErrors['leave_personal_days.' . $employee->id] = $message;
+                            }
+                        }
+                    }
+
+                    $componentValues = [];
+                    foreach ($columnToComponentId as $colIndex => $componentId) {
+                        $componentValues[$componentId] = $this->parseExcelInt($row[$colIndex] ?? 0);
+                    }
+
+                    $totalEarnings = 0;
+                    $totalDeductions = 0;
+                    $totalTax = 0;
+                    $basicSalary = 0;
+
+                    foreach ($componentValues as $componentId => $amount) {
+                        $type = $componentTypeMap[$componentId] ?? null;
+                        if ($type === 'earning') {
+                            $totalEarnings += $amount;
+                        } elseif ($type === 'deduction') {
+                            $totalDeductions += $amount;
+                        } elseif ($type === 'tax') {
+                            $totalTax += $amount;
+                        }
+                        if ($basicSalaryComponentId && $componentId === $basicSalaryComponentId) {
+                            $basicSalary = $amount;
+                        }
+                    }
+
+                    $payslip = Payslip::updateOrCreate(
+                        ['payroll_period_id' => $period->id, 'employee_id' => $employee->id],
+                        [
+                            'payment_date' => $paymentDate,
+                            'work_days' => $workDays,
+                            'leave_joint_days' => max($leaveJoint, 0),
+                            'leave_personal_days' => max($leavePersonal, 0),
+                            'basic_salary' => $basicSalary,
+                            'total_earnings' => $totalEarnings,
+                            'total_deductions' => $totalDeductions,
+                            'tax_amount' => $totalTax,
+                            'net_salary' => $netto,
+                            'status' => 'draft',
+                        ]
                     );
+
+                    foreach ($componentValues as $componentId => $amount) {
+                        PayslipDetail::updateOrCreate(
+                            ['payslip_id' => $payslip->id, 'payslip_component_id' => $componentId],
+                            ['amount' => $amount]
+                        );
+                    }
+
+                    $importedRows++;
                 }
 
-                $importedRows++;
-            }
-        });
+                if (count($leaveOverBalanceErrors) > 0) {
+                    throw ValidationException::withMessages($leaveOverBalanceErrors);
+                }
+            });
+        } catch (ValidationException $e) {
+            return redirect()
+                ->route('payroll-periods.show', $period->id)
+                ->withErrors($e->errors())
+                ->with('error', 'Import gagal karena ada input cuti yang melebihi saldo. Silakan perbaiki file Excel dan upload ulang.');
+        } catch (\Throwable $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
 
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -370,6 +450,102 @@ class PayrollPeriodController extends Controller
         $failed = 0;
         $failedLabels = [];
 
+        try {
+            DB::transaction(function () use ($period, $payslips) {
+                LeaveTransaction::query()
+                    ->where('payroll_period_id', $period->id)
+                    ->delete();
+
+                if ($period->month === '01') {
+                    $resetDate = Carbon::createFromDate((int) $period->year, 1, 1)->toDateString();
+                    $allEmployees = Employee::query()->get(['id']);
+                    foreach ($allEmployees as $emp) {
+                        LeaveTransaction::create([
+                            'employee_id' => $emp->id,
+                            'payroll_period_id' => $period->id,
+                            'payslip_id' => null,
+                            'transaction_date' => $resetDate,
+                            'type' => 'reset',
+                            'days' => 12,
+                            'description' => 'Reset saldo cuti tahunan (periode Januari ' . $period->year . ')',
+                        ]);
+
+                        Employee::where('id', $emp->id)->update(['leave_balance' => 12]);
+                    }
+                }
+
+                $fieldErrors = [];
+                $paymentDate = Carbon::createFromDate((int) $period->year, (int) $period->month, 1)->endOfMonth()->toDateString();
+
+                foreach ($payslips as $payslip) {
+                    $employee = $payslip->employee;
+                    if (!$employee) {
+                        continue;
+                    }
+
+                    $joint = max((int) ($payslip->leave_joint_days ?? 0), 0);
+                    $personal = max((int) ($payslip->leave_personal_days ?? 0), 0);
+                    $used = $joint + $personal;
+
+                    $entitlement = max((int) ($employee->leave_balance ?? 0), 0);
+                    if ($used > $entitlement) {
+                        $message = 'Total cuti (' . $used . ') melebihi saldo cuti (' . $entitlement . ').';
+                        $fieldErrors['leave_joint_days.' . $employee->id] = $message;
+                        $fieldErrors['leave_personal_days.' . $employee->id] = $message;
+                        continue;
+                    }
+
+                    $remaining = max($entitlement - $used, 0);
+
+                    $payslip->leave_entitlement = $entitlement;
+                    $payslip->leave_remaining = $remaining;
+                    $payslip->save();
+
+                    if ($joint > 0) {
+                        LeaveTransaction::create([
+                            'employee_id' => $employee->id,
+                            'payroll_period_id' => $period->id,
+                            'payslip_id' => $payslip->id,
+                            'transaction_date' => $paymentDate,
+                            'type' => 'joint',
+                            'days' => $joint,
+                            'description' => 'Cuti bersama (periode ' . $period->month . '/' . $period->year . ')',
+                        ]);
+                    }
+
+                    if ($personal > 0) {
+                        LeaveTransaction::create([
+                            'employee_id' => $employee->id,
+                            'payroll_period_id' => $period->id,
+                            'payslip_id' => $payslip->id,
+                            'transaction_date' => $paymentDate,
+                            'type' => 'personal',
+                            'days' => $personal,
+                            'description' => 'Cuti personal (periode ' . $period->month . '/' . $period->year . ')',
+                        ]);
+                    }
+
+                    Employee::where('id', $employee->id)->update(['leave_balance' => $remaining]);
+                }
+
+                if (count($fieldErrors) > 0) {
+                    throw ValidationException::withMessages($fieldErrors);
+                }
+
+                $period->is_leave_distributed = true;
+                $period->save();
+            });
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', $e->getMessage());
+        }
+
+        $payslips = Payslip::query()
+            ->where('payroll_period_id', $period->id)
+            ->with(['employee', 'payrollPeriod', 'details.component'])
+            ->get();
+
         foreach ($payslips as $payslip) {
             $email = trim((string) optional($payslip->employee)->email);
             if ($email === '') {
@@ -437,11 +613,34 @@ class PayrollPeriodController extends Controller
         }
 
         $before = $period->toArray();
-        $period->status = 'draft';
-        $period->published_at = null;
-        $period->save();
 
-        Payslip::where('payroll_period_id', $period->id)->update(['status' => 'draft']);
+        DB::transaction(function () use ($period) {
+            $employeeIds = LeaveTransaction::query()
+                ->where('payroll_period_id', $period->id)
+                ->pluck('employee_id')
+                ->unique()
+                ->values();
+
+            LeaveTransaction::query()
+                ->where('payroll_period_id', $period->id)
+                ->delete();
+
+            foreach ($employeeIds as $employeeId) {
+                $newBalance = $this->recalculateLeaveBalance((string) $employeeId);
+                Employee::where('id', $employeeId)->update(['leave_balance' => $newBalance]);
+            }
+
+            Payslip::where('payroll_period_id', $period->id)->update([
+                'status' => 'draft',
+                'leave_entitlement' => null,
+                'leave_remaining' => null,
+            ]);
+
+            $period->status = 'draft';
+            $period->published_at = null;
+            $period->is_leave_distributed = false;
+            $period->save();
+        });
 
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -488,6 +687,10 @@ class PayrollPeriodController extends Controller
             'payslips.*.*' => ['nullable', 'numeric', 'min:0'],
             'work_days' => ['nullable', 'array'],
             'work_days.*' => ['nullable', 'numeric', 'min:0'],
+            'leave_joint_days' => ['nullable', 'array'],
+            'leave_joint_days.*' => ['nullable', 'numeric', 'min:0'],
+            'leave_personal_days' => ['nullable', 'array'],
+            'leave_personal_days.*' => ['nullable', 'numeric', 'min:0'],
             'netto' => ['nullable', 'array'],
             'netto.*' => ['nullable', 'numeric', 'min:0'],
         ]);
@@ -499,6 +702,8 @@ class PayrollPeriodController extends Controller
         }
         $payslips = $request->input('payslips', []);
         $workDaysInput = $request->input('work_days', []);
+        $leaveJointInput = $request->input('leave_joint_days', []);
+        $leavePersonalInput = $request->input('leave_personal_days', []);
         $nettoInput = $request->input('netto', []);
 
         $componentTypeMap = PayslipComponent::pluck('type', 'id');
@@ -507,8 +712,42 @@ class PayrollPeriodController extends Controller
         $employeeIds = array_unique(array_merge(
             array_keys($payslips),
             array_keys($workDaysInput),
+            array_keys($leaveJointInput),
+            array_keys($leavePersonalInput),
             array_keys($nettoInput)
         ));
+
+        $errors = [];
+        $entitlementMap = [];
+        if ($period->month !== '01' && count($employeeIds) > 0) {
+            $entitlementMap = Employee::query()
+                ->whereIn('id', $employeeIds)
+                ->pluck('leave_balance', 'id')
+                ->map(fn ($v) => max((int) ($v ?? 0), 0))
+                ->toArray();
+        }
+
+        foreach ($employeeIds as $employeeId) {
+            $joint = isset($leaveJointInput[$employeeId]) && $leaveJointInput[$employeeId] !== '' ? (int) round((float) $leaveJointInput[$employeeId]) : 0;
+            $personal = isset($leavePersonalInput[$employeeId]) && $leavePersonalInput[$employeeId] !== '' ? (int) round((float) $leavePersonalInput[$employeeId]) : 0;
+            $joint = max($joint, 0);
+            $personal = max($personal, 0);
+            $used = $joint + $personal;
+            if ($used <= 0) {
+                continue;
+            }
+
+            $entitlement = $period->month === '01' ? 12 : ($entitlementMap[$employeeId] ?? 0);
+            if ($used > $entitlement) {
+                $message = 'Total cuti (' . $used . ') melebihi saldo cuti (' . $entitlement . ').';
+                $errors['leave_joint_days.' . $employeeId] = $message;
+                $errors['leave_personal_days.' . $employeeId] = $message;
+            }
+        }
+
+        if (count($errors) > 0) {
+            throw ValidationException::withMessages($errors);
+        }
 
         $paymentDate = Carbon::createFromDate((int) $period->year, (int) $period->month, 1)->endOfMonth()->toDateString();
 
@@ -516,6 +755,8 @@ class PayrollPeriodController extends Controller
             $employeeIds,
             $payslips,
             $workDaysInput,
+            $leaveJointInput,
+            $leavePersonalInput,
             $nettoInput,
             $period,
             $paymentDate,
@@ -525,9 +766,11 @@ class PayrollPeriodController extends Controller
             foreach ($employeeIds as $employeeId) {
                 $componentValues = $payslips[$employeeId] ?? [];
                 $workDays = isset($workDaysInput[$employeeId]) && $workDaysInput[$employeeId] !== '' ? (int) $workDaysInput[$employeeId] : 0;
+                $leaveJoint = isset($leaveJointInput[$employeeId]) && $leaveJointInput[$employeeId] !== '' ? (int) round((float) $leaveJointInput[$employeeId]) : 0;
+                $leavePersonal = isset($leavePersonalInput[$employeeId]) && $leavePersonalInput[$employeeId] !== '' ? (int) round((float) $leavePersonalInput[$employeeId]) : 0;
                 $netto = isset($nettoInput[$employeeId]) && $nettoInput[$employeeId] !== '' ? (int) round((float) $nettoInput[$employeeId]) : 0;
 
-                $hasAnyValue = $workDays > 0 || $netto > 0;
+                $hasAnyValue = $workDays > 0 || $netto > 0 || $leaveJoint > 0 || $leavePersonal > 0;
                 foreach ($componentValues as $val) {
                     if ($val !== null && $val !== '') {
                         $hasAnyValue = true;
@@ -572,6 +815,8 @@ class PayrollPeriodController extends Controller
                     [
                         'payment_date' => $paymentDate,
                         'work_days' => $workDays,
+                        'leave_joint_days' => max($leaveJoint, 0),
+                        'leave_personal_days' => max($leavePersonal, 0),
                         'basic_salary' => $basicSalary,
                         'total_earnings' => $totalEarnings,
                         'total_deductions' => $totalDeductions,

@@ -16,6 +16,8 @@ class LeaveTransaction extends Model
 
     protected $fillable = [
         'employee_id', 
+        'payroll_period_id',
+        'payslip_id',
         'transaction_date', 
         'type', 
         'days', 

@@ -74,10 +74,10 @@
 
     $employee = optional($payslip)->employee;
 
-    $hakCuti = (int) (optional($employee)->leave_balance ?? 0);
-    $cutiBersama = 0;
-    $cutiPersonal = 0;
-    $sisaCuti = $hakCuti;
+    $hakCuti = (int) (optional($payslip)->leave_entitlement ?? optional($employee)->leave_balance ?? 0);
+    $cutiBersama = (int) (optional($payslip)->leave_joint_days ?? 0);
+    $cutiPersonal = (int) (optional($payslip)->leave_personal_days ?? 0);
+    $sisaCuti = (int) (optional($payslip)->leave_remaining ?? max($hakCuti - $cutiBersama - $cutiPersonal, 0));
 
     $details = $payslip ? ($payslip->relationLoaded('details') ? $payslip->details : $payslip->details()->get()) : collect();
     if (method_exists($details, 'load')) {
@@ -450,8 +450,8 @@
     <tr>
         <td class="notes">
             <div class="fw-bold" style="margin-bottom: 4px;">Catatan</div>
-            <div>- Setiap 1 bulan bekerja mendapatkan 1 hari hak cuti</div>
-            <div>- Setiap tahun cuti akan direset</div>
+            <div>- Hak cuti akan di-reset setiap tahun</div>
+            <div>- Penggunaan cuti tidak dapat dilakukan sekaligus, melainkan harus diambil secara bertahap</div>
         </td>
     </tr>
 </table>

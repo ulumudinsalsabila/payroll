@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\ActivityLog;
+use App\Models\LeaveTransaction;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -46,11 +48,33 @@ class EmployeeController extends Controller
             'ter_category' => ['required','string', Rule::in(['A','B','C'])],
         ]);
 
-        $data['leave_balance'] = $data['leave_balance'] ?? 0;
+        if (!array_key_exists('leave_balance', $data) || $data['leave_balance'] === null) {
+            $joinDate = Carbon::parse($data['join_date']);
+            $joinYear = (int) $joinDate->format('Y');
+            $nowYear = (int) Carbon::now()->format('Y');
+
+            if ($joinYear === $nowYear) {
+                $joinMonth = (int) $joinDate->format('n');
+                $data['leave_balance'] = max(12 - $joinMonth + 1, 0);
+            } else {
+                $data['leave_balance'] = 12;
+            }
+        }
+
         $data['is_active'] = array_key_exists('is_active', $data) ? (bool) $data['is_active'] : true;
         $data['employee_code'] = $this->generateEmployeeCode();
 
         $employee = Employee::create($data);
+
+        LeaveTransaction::create([
+            'employee_id' => $employee->id,
+            'payroll_period_id' => null,
+            'payslip_id' => null,
+            'transaction_date' => Carbon::parse($employee->join_date)->toDateString(),
+            'type' => 'reset',
+            'days' => (int) ($employee->leave_balance ?? 0),
+            'description' => 'Saldo cuti awal (prorate)',
+        ]);
 
         ActivityLog::create([
             'user_id' => auth()->id(),
@@ -71,6 +95,7 @@ class EmployeeController extends Controller
     {
         $employee = Employee::findOrFail($id);
         $before = $employee->toArray();
+        $beforeLeaveBalance = (int) ($employee->leave_balance ?? 0);
         $data = $request->validate([
             'name' => ['required','string','max:255'],
             'email' => ['nullable','email','max:255', Rule::unique('employees', 'email')->ignore($employee->id, 'id')],
@@ -88,10 +113,25 @@ class EmployeeController extends Controller
             'ter_category' => ['required','string', Rule::in(['A','B','C'])],
         ]);
 
-        $data['leave_balance'] = $data['leave_balance'] ?? 0;
+        if (!array_key_exists('leave_balance', $data) || $data['leave_balance'] === null) {
+            $data['leave_balance'] = $beforeLeaveBalance;
+        }
 
         $employee->update($data);
         $employee->refresh();
+
+        $afterLeaveBalance = (int) ($employee->leave_balance ?? 0);
+        if ($afterLeaveBalance !== $beforeLeaveBalance) {
+            LeaveTransaction::create([
+                'employee_id' => $employee->id,
+                'payroll_period_id' => null,
+                'payslip_id' => null,
+                'transaction_date' => Carbon::now()->toDateString(),
+                'type' => 'reset',
+                'days' => $afterLeaveBalance,
+                'description' => 'Penyesuaian saldo cuti',
+            ]);
+        }
 
         ActivityLog::create([
             'user_id' => auth()->id(),
