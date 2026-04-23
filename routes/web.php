@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PayslipComponentController;
 use App\Http\Controllers\TerRateController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\TimezoneController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,8 @@ use App\Http\Controllers\ActivityLogController;
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.attempt');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::middleware(['auth'])->post('/timezone', [TimezoneController::class, 'store'])->name('timezone.store');
 
 // Protected HRD area
 Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {

@@ -251,6 +251,49 @@
         });
     </script>
 
+    @auth
+        <script>
+            (function () {
+                var tz = null;
+                try {
+                    tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                } catch (e) {
+                    tz = null;
+                }
+
+                if (!tz) return;
+
+                var serverTz = @json(Auth::user()->timezone);
+                if (serverTz === tz) {
+                    try {
+                        localStorage.setItem('client_timezone', tz);
+                    } catch (e) {
+                    }
+                    return;
+                }
+
+                fetch('{{ route('timezone.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ timezone: tz })
+                })
+                .then(function (resp) {
+                    if (!resp.ok) return;
+                    try {
+                        localStorage.setItem('client_timezone', tz);
+                    } catch (e) {
+                    }
+                })
+                .catch(function () {
+                });
+            })();
+        </script>
+    @endauth
+
     @stack('scripts')
 </body>
 
