@@ -39,9 +39,17 @@ Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::post('payroll-periods/{payroll_period}/reopen-draft', [PayrollPeriodController::class, 'reopenDraft'])->name('payroll-periods.reopen-draft');
     Route::get('payroll-periods/{payroll_period}/download-template', [PayrollPeriodController::class, 'downloadTemplate'])->name('payroll-periods.download-template');
     Route::get('payroll-periods/{payroll_period}/preview-pdf', [PayrollPeriodController::class, 'previewPdf'])->name('payroll-periods.preview-pdf');
+    Route::get('payroll-periods/data', [PayrollPeriodController::class, 'data'])->name('payroll-periods.data');
     Route::resource('payroll-periods', PayrollPeriodController::class);
+
+    Route::get('employees/data', [\App\Http\Controllers\EmployeeController::class, 'data'])->name('employees.data');
     Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
+
+    Route::get('payslip-components/data', [PayslipComponentController::class, 'data'])->name('payslip-components.data');
     Route::resource('payslip-components', PayslipComponentController::class);
+
+    Route::get('ter-rates/data', [TerRateController::class, 'data'])->name('ter-rates.data');
     Route::resource('ter-rates', TerRateController::class);
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
 });

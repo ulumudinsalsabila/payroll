@@ -97,7 +97,8 @@
                     <!--begin::Content-->
                     <div class="w-md-400px">
                         <!--begin::Form-->
-                        <form class="form w-100" id="kt_sign_in_form" method="POST" action="{{ route('login.attempt') }}">
+                        <form class="form w-100" id="kt_sign_in_form" method="POST"
+                            action="{{ route('login.attempt') }}">
                             @csrf
 
                             <!--begin::Heading-->

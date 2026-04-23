@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    @if(session('success'))
+    @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -39,14 +39,18 @@
                         $photoPath = preg_replace('/^storage\//', '', $photoPath);
                         $photoUrl = !empty($photoPath) ? url('storage/profile/' . $photoPath) : null;
                     @endphp
-                    <div class="image-input image-input-outline" data-kt-image-input="true" style="background-image: url('{{ $fallbackAvatar }}')">
-                        <div class="image-input-wrapper w-150px h-150px" style="background-image: url('{{ $photoUrl ?? $fallbackAvatar }}');"></div>
-                        <label class="btn btn-icon btn-circle btn-active-color-primary w-35px h-35px bg-body shadow" data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Ganti foto">
+                    <div class="image-input image-input-outline" data-kt-image-input="true"
+                        style="background-image: url('{{ $fallbackAvatar }}')">
+                        <div class="image-input-wrapper w-150px h-150px"
+                            style="background-image: url('{{ $photoUrl ?? $fallbackAvatar }}');"></div>
+                        <label class="btn btn-icon btn-circle btn-active-color-primary w-35px h-35px bg-body shadow"
+                            data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Ganti foto">
                             <i class="bi bi-pencil-fill fs-7"></i>
                             <input type="file" name="photo" accept=".png, .jpg, .jpeg" form="profile_form" />
                             <input type="hidden" name="photo_remove" />
                         </label>
-                        <span class="btn btn-icon btn-circle btn-active-color-primary w-35px h-35px bg-body shadow" data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Batalkan">
+                        <span class="btn btn-icon btn-circle btn-active-color-primary w-35px h-35px bg-body shadow"
+                            data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Batalkan">
                             <i class="bi bi-x fs-2"></i>
                         </span>
                     </div>
@@ -74,21 +78,24 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <form id="profile_form" method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
+                    <form id="profile_form" method="POST" action="{{ route('profile.update') }}"
+                        enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
                         <div class="row g-5">
                             <div class="col-md-6">
                                 <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                                <input type="text" name="name" value="{{ old('name', $user->name) }}" class="form-control @error('name') is-invalid @enderror" required>
+                                <input type="text" name="name" value="{{ old('name', $user->name) }}"
+                                    class="form-control @error('name') is-invalid @enderror" required>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" name="email" value="{{ old('email', $user->email) }}" class="form-control @error('email') is-invalid @enderror" required>
+                                <input type="email" name="email" value="{{ old('email', $user->email) }}"
+                                    class="form-control @error('email') is-invalid @enderror" required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -98,14 +105,18 @@
                         <div class="row g-5 mt-1">
                             <div class="col-md-6">
                                 <label class="form-label">Nomor Telepon</label>
-                                <input type="text" name="telepon" value="{{ old('telepon', $user->telepon) }}" class="form-control @error('telepon') is-invalid @enderror" placeholder="Contoh: 0812xxx">
+                                <input type="text" name="telepon" value="{{ old('telepon', $user->telepon) }}"
+                                    class="form-control @error('telepon') is-invalid @enderror"
+                                    placeholder="Contoh: 0812xxx">
                                 @error('telepon')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Password Baru</label>
-                                <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Kosongkan jika tidak diubah">
+                                <input type="password" name="password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    placeholder="Kosongkan jika tidak diubah">
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -115,7 +126,8 @@
                         <div class="row g-5 mt-1">
                             <div class="col-md-6">
                                 <label class="form-label">Konfirmasi Password</label>
-                                <input type="password" name="password_confirmation" class="form-control" placeholder="Ulangi password baru">
+                                <input type="password" name="password_confirmation" class="form-control"
+                                    placeholder="Ulangi password baru">
                             </div>
                         </div>
 

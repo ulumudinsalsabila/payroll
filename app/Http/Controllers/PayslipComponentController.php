@@ -6,13 +6,51 @@ use App\Models\PayslipComponent;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Yajra\DataTables\Facades\DataTables;
 
 class PayslipComponentController extends Controller
 {
     public function index()
     {
-        $components = PayslipComponent::orderBy('name')->get();
-        return view('payslip-components.index', compact('components'));
+        return view('payslip-components.index');
+    }
+
+    public function data(Request $request)
+    {
+        $query = PayslipComponent::query()->select([
+            'id',
+            'name',
+            'type',
+            'percentage',
+            'max_cap',
+            'is_active',
+        ]);
+
+        return DataTables::eloquent($query)
+            ->editColumn('is_active', function ($row) {
+                return $row->is_active ? 1 : 0;
+            })
+            ->filterColumn('type', function ($query, $keyword) {
+                if ($keyword === null || $keyword === '') {
+                    return;
+                }
+                $query->where('type', $keyword);
+            })
+            ->filterColumn('is_active', function ($query, $keyword) {
+                if ($keyword === null || $keyword === '') {
+                    return;
+                }
+
+                if ($keyword === '1' || $keyword === 1 || $keyword === true) {
+                    $query->where('is_active', true);
+                    return;
+                }
+                if ($keyword === '0' || $keyword === 0 || $keyword === false) {
+                    $query->where('is_active', false);
+                    return;
+                }
+            })
+            ->toJson();
     }
 
     public function store(Request $request)

@@ -6,13 +6,30 @@ use App\Models\TerRate;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Yajra\DataTables\Facades\DataTables;
 
 class TerRateController extends Controller
 {
     public function index()
     {
-        $rates = TerRate::orderByDesc('created_at')->get();
-        return view('ter-rates.index', compact('rates'));
+        return view('ter-rates.index');
+    }
+
+    public function data(Request $request)
+    {
+        $query = TerRate::query()
+            ->select(['id', 'category', 'min_bruto', 'max_bruto', 'percentage'])
+            ->orderBy('category')
+            ->orderBy('min_bruto');
+
+        return DataTables::eloquent($query)
+            ->filterColumn('category', function ($query, $keyword) {
+                if ($keyword === null || $keyword === '') {
+                    return;
+                }
+                $query->where('category', $keyword);
+            })
+            ->toJson();
     }
 
     public function store(Request $request)

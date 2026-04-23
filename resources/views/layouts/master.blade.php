@@ -29,7 +29,9 @@
     <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" />
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
     <style>
-        [data-bs-theme="light"] #kt_app_sidebar_logo .sidebar-title { color: #fff !important; }
+        [data-bs-theme="light"] #kt_app_sidebar_logo .sidebar-title {
+            color: #fff !important;
+        }
     </style>
 
     @stack('styles')
@@ -79,7 +81,8 @@
 
                     <!--begin::Sidebar mobile toggle-->
                     <div class="d-flex align-items-center d-lg-none ms-n3 me-1 me-md-2" title="Tampilkan menu">
-                        <div class="btn btn-icon btn-active-color-primary w-35px h-35px" id="kt_app_sidebar_mobile_toggle">
+                        <div class="btn btn-icon btn-active-color-primary w-35px h-35px"
+                            id="kt_app_sidebar_mobile_toggle">
                             <i class="bi bi-list fs-1"></i>
                         </div>
                     </div>
@@ -87,7 +90,8 @@
 
                     <!--begin::Header logo & title-->
                     <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
-                        <a href="{{ auth()->check() ? route('payroll-periods.index') : route('login') }}" class="d-flex align-items-center">
+                        <a href="{{ auth()->check() ? route('payroll-periods.index') : route('login') }}"
+                            class="d-flex align-items-center">
                             <img alt="Logo" src="{{ asset('assets/media/logos/default-small.svg') }}"
                                 class="h-30px" />
                             <span class="ms-3 fw-bold fs-4 d-none d-sm-inline text-gray-800">
@@ -100,13 +104,16 @@
                     <!--begin::Navbar-->
                     <div class="d-flex align-items-center flex-shrink-0">
                         <div class="me-3">
-                            <button type="button" id="theme_toggle" class="btn btn-icon btn-light btn-active-light-primary w-35px h-35px" aria-label="Ubah tema">
+                            <button type="button" id="theme_toggle"
+                                class="btn btn-icon btn-light btn-active-light-primary w-35px h-35px"
+                                aria-label="Ubah tema">
                                 <i id="theme_toggle_icon" class="bi"></i>
                             </button>
                         </div>
                         @auth
                             <div class="d-flex align-items-center">
-                                <a href="{{ route('payroll-periods.index') }}" class="d-flex align-items-center text-decoration-none">
+                                <a href="{{ route('payroll-periods.index') }}"
+                                    class="d-flex align-items-center text-decoration-none">
                                     <div class="d-none d-md-flex flex-column me-3 text-start">
                                         <span class="fw-semibold text-gray-600 fs-7">Login sebagai</span>
                                         <span class="fw-bold text-gray-800 fs-6">
@@ -152,7 +159,8 @@
 
                     <!--begin::Sidebar logo-->
                     <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
-                        <a href="{{ auth()->check() ? route('payroll-periods.index') : route('login') }}" class="d-flex align-items-center">
+                        <a href="{{ auth()->check() ? route('payroll-periods.index') : route('login') }}"
+                            class="d-flex align-items-center">
                             <img alt="Logo" src="{{ asset('assets/media/logos/default-small.svg') }}"
                                 class="h-25px app-sidebar-logo-default" />
                             <span class="ms-3 fw-semibold text-gray-800 fs-6 sidebar-title">EasyKan</span>
@@ -207,7 +215,7 @@
     <script src="{{ asset('assets/plugins/custom/datatables/datatables.bundle.js') }}"></script>
 
     <script>
-        (function () {
+        (function() {
             function applyIcon(mode) {
                 var icon = document.getElementById('theme_toggle_icon');
                 if (!icon) return;
@@ -220,15 +228,17 @@
 
             function setMode(mode) {
                 document.documentElement.setAttribute('data-bs-theme', mode);
-                try { localStorage.setItem('data-bs-theme', mode); } catch (e) {}
+                try {
+                    localStorage.setItem('data-bs-theme', mode);
+                } catch (e) {}
                 applyIcon(mode);
             }
 
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function() {
                 applyIcon(getMode());
                 var btn = document.getElementById('theme_toggle');
                 if (btn) {
-                    btn.addEventListener('click', function () {
+                    btn.addEventListener('click', function() {
                         var next = getMode() === 'dark' ? 'light' : 'dark';
                         setMode(next);
                     });
@@ -239,8 +249,8 @@
 
     <script>
         // Global: enforce smaller buttons across the app
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.btn').forEach(function (el) {
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn').forEach(function(el) {
                 if (!el.classList.contains('btn-sm')) {
                     el.classList.add('btn-sm');
                 }
@@ -253,7 +263,7 @@
 
     @auth
         <script>
-            (function () {
+            (function() {
                 var tz = null;
                 try {
                     tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -267,30 +277,30 @@
                 if (serverTz === tz) {
                     try {
                         localStorage.setItem('client_timezone', tz);
-                    } catch (e) {
-                    }
+                    } catch (e) {}
                     return;
                 }
 
                 fetch('{{ route('timezone.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ timezone: tz })
-                })
-                .then(function (resp) {
-                    if (!resp.ok) return;
-                    try {
-                        localStorage.setItem('client_timezone', tz);
-                    } catch (e) {
-                    }
-                })
-                .catch(function () {
-                });
-            })();
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            timezone: tz
+                        })
+                    })
+                    .then(function(resp) {
+                        if (!resp.ok) return;
+                        try {
+                            localStorage.setItem('client_timezone', tz);
+                        } catch (e) {}
+                    })
+                    .catch(function() {});
+            })
+            ();
         </script>
     @endauth
 

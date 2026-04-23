@@ -22,6 +22,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\Response;
+use Yajra\DataTables\Facades\DataTables;
 
 class PayrollPeriodController extends Controller
 {
@@ -63,8 +64,21 @@ class PayrollPeriodController extends Controller
 
     public function index()
     {
-        $periods = PayrollPeriod::orderByDesc('created_at')->get();
-        return view('payroll-periods.index', compact('periods'));
+        return view('payroll-periods.index');
+    }
+
+    public function data(Request $request)
+    {
+        $query = PayrollPeriod::query()->select([
+            'id',
+            'month',
+            'year',
+            'description',
+            'status',
+            'created_at',
+        ]);
+
+        return DataTables::eloquent($query)->toJson();
     }
 
     public function store(Request $request)

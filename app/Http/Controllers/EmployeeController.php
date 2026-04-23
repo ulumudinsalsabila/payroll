@@ -8,13 +8,70 @@ use App\Models\LeaveTransaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Yajra\DataTables\Facades\DataTables;
 
 class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::orderBy('employee_code')->get();
-        return view('employees.index', compact('employees'));
+        $departments = Employee::query()
+            ->whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->orderBy('department')
+            ->pluck('department');
+
+        $positions = Employee::query()
+            ->whereNotNull('position')
+            ->where('position', '!=', '')
+            ->distinct()
+            ->orderBy('position')
+            ->pluck('position');
+
+        return view('employees.index', compact('departments', 'positions'));
+    }
+
+    public function data(Request $request)
+    {
+        $query = Employee::query()->select([
+            'id',
+            'employee_code',
+            'name',
+            'email',
+            'is_active',
+            'position',
+            'department',
+            'address',
+            'bank_name',
+            'bank_account_name',
+            'bank_account_number',
+            'join_date',
+            'leave_balance',
+            'npwp_number',
+            'ptkp_status',
+            'ter_category',
+        ]);
+
+        return DataTables::eloquent($query)
+            ->editColumn('join_date', function ($row) {
+                return $row->join_date?->format('Y-m-d') ?? '';
+            })
+            ->editColumn('is_active', function ($row) {
+                return $row->is_active ? 1 : 0;
+            })
+            ->filterColumn('department', function ($query, $keyword) {
+                if ($keyword === null || $keyword === '') {
+                    return;
+                }
+                $query->where('department', $keyword);
+            })
+            ->filterColumn('position', function ($query, $keyword) {
+                if ($keyword === null || $keyword === '') {
+                    return;
+                }
+                $query->where('position', $keyword);
+            })
+            ->toJson();
     }
     
     /**
