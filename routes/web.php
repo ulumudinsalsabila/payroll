@@ -8,6 +8,7 @@ use App\Http\Controllers\PayslipComponentController;
 use App\Http\Controllers\TerRateController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\TimezoneController;
+use App\Http\Controllers\EmailPreviewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +51,9 @@ Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
 
     Route::get('ter-rates/data', [TerRateController::class, 'data'])->name('ter-rates.data');
     Route::resource('ter-rates', TerRateController::class);
+
+    Route::get('email-previews/payslip', [EmailPreviewController::class, 'payslip'])->name('email-previews.payslip');
+
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     Route::get('/activity-logs/data', [ActivityLogController::class, 'data'])->name('activity-logs.data');
 });
