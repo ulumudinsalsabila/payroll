@@ -21,8 +21,6 @@ class PayslipComponentController extends Controller
             'id',
             'name',
             'type',
-            'percentage',
-            'max_cap',
             'is_active',
         ]);
 
@@ -58,15 +56,8 @@ class PayslipComponentController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', Rule::in(['earning','deduction','tax'])],
-            'percentage' => [Rule::requiredIf($request->input('type') === 'deduction'), 'nullable', 'numeric', 'min:0', 'max:100'],
-            'max_cap' => ['nullable', 'numeric', 'min:0'],
         ]);
         $data['is_active'] = $request->boolean('is_active');
-
-        if (($data['type'] ?? null) !== 'deduction') {
-            $data['percentage'] = null;
-            $data['max_cap'] = null;
-        }
 
         $component = PayslipComponent::create($data);
 
@@ -91,15 +82,8 @@ class PayslipComponentController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'string', Rule::in(['earning','deduction','tax'])],
-            'percentage' => [Rule::requiredIf($request->input('type') === 'deduction'), 'nullable', 'numeric', 'min:0', 'max:100'],
-            'max_cap' => ['nullable', 'numeric', 'min:0'],
         ]);
         $data['is_active'] = $request->boolean('is_active');
-
-        if (($data['type'] ?? null) !== 'deduction') {
-            $data['percentage'] = null;
-            $data['max_cap'] = null;
-        }
 
         $before = $component->toArray();
         $component->update($data);

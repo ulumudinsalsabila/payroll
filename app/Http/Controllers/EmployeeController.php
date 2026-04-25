@@ -48,8 +48,7 @@ class EmployeeController extends Controller
             'join_date',
             'leave_balance',
             'npwp_number',
-            'ptkp_status',
-            'ter_category',
+            'basic_salary',
         ]);
 
         return DataTables::eloquent($query)
@@ -101,8 +100,9 @@ class EmployeeController extends Controller
             'join_date' => ['required','date'],
             'leave_balance' => ['nullable','integer','min:0'],
             'npwp_number' => ['nullable','string','max:100'],
-            'ptkp_status' => ['required','string', Rule::in(['TK/0','TK/1','TK/2','TK/3','K/0','K/1','K/2','K/3'])],
-            'ter_category' => ['required','string', Rule::in(['A','B','C'])],
+            'ptkp_status' => ['nullable','string'],
+            'ter_category' => ['nullable','string'],
+            'basic_salary' => ['nullable','integer','min:0'],
         ]);
 
         if (!array_key_exists('leave_balance', $data) || $data['leave_balance'] === null) {
@@ -166,8 +166,9 @@ class EmployeeController extends Controller
             'join_date' => ['required','date'],
             'leave_balance' => ['nullable','integer','min:0'],
             'npwp_number' => ['nullable','string','max:100'],
-            'ptkp_status' => ['required','string', Rule::in(['TK/0','TK/1','TK/2','TK/3','K/0','K/1','K/2','K/3'])],
-            'ter_category' => ['required','string', Rule::in(['A','B','C'])],
+            'ptkp_status' => ['nullable','string'],
+            'ter_category' => ['nullable','string'],
+            'basic_salary' => ['nullable','integer','min:0'],
         ]);
 
         if (!array_key_exists('leave_balance', $data) || $data['leave_balance'] === null) {

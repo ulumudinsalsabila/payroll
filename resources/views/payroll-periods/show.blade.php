@@ -125,7 +125,8 @@
             </div>
         </div>
         <div class="card-body">
-            <div><strong>Deskripsi:</strong><br>{{ $payrollPeriod->description ?: '-' }}</div>
+            <div><strong>Deskripsi :</strong> {{ $payrollPeriod->description ?: '-' }}</div>
+            <div class="mt-2"><strong>Default Hari Kerja :</strong> {{ $payrollPeriod->default_work_days ?? 25 }} hari</div>
         </div>
     </div>
 
@@ -142,83 +143,69 @@
         <form action="{{ route('payroll-periods.save-draft', $payrollPeriod->id) }}" method="POST">
             @csrf
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table align-middle table-row-dashed fs-6 gy-5">
-                        <thead class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                            <tr>
-                                <th style="min-width: 220px;">Nama Karyawan</th>
-                                <th style="min-width: 140px;">Hari Kerja</th>
-                                <th style="min-width: 140px;">Cuti Bersama</th>
-                                <th style="min-width: 140px;">Cuti Pribadi</th>
-                                @foreach ($earnings as $earning)
-                                    <th style="min-width: 160px;">{{ $earning->name }}</th>
-                                @endforeach
-                                @foreach ($deductions as $deduction)
-                                    <th style="min-width: 160px;">{{ $deduction->name }}</th>
-                                @endforeach
-                                @foreach ($taxes as $tax)
-                                    <th style="min-width: 160px;">{{ $tax->name }}</th>
-                                @endforeach
-                                <th style="min-width: 160px;">Netto</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($employees as $employee)
-                                <tr>
-                                    <td class="fw-semibold">{{ $employee->name }}</td>
-                                    <td>
+                @foreach ($employees as $employee)
+                    <div class="card mb-3 employee-card" data-employee-id="{{ $employee->id }}">
+                        <div class="card-header d-flex justify-content-between align-items-center py-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#employeeCollapse{{ $employee->id }}" aria-expanded="false">
+                            <div class="text-start">
+                                <h4 class="text-primary fw-bold text-14 mb-0">{{ $employee->name }}</h4>
+                            </div>
+                            <div class="text-end d-flex align-items-center">
+                                <h4 class="text-primary fw-bold text-14 me-3 mb-0" id="totalGaji{{ $employee->id }}">Total Gaji : Rp {{ number_format($draftNetto[$employee->id] ?? 0, 0, ',', '.') }}</h4>
+                                <i class="bi bi-chevron-down collapse-icon" id="collapseIcon{{ $employee->id }}"></i>
+                            </div>
+                        </div>
+                        <div class="collapse pt-4" id="employeeCollapse{{ $employee->id }}">
+                            <div class="card-body pt-0">
+                                <div class="row g-2">
+                                    <div class="col-3">
+                                        <label class="form-label small">Masuk Hari Kerja</label>
                                         <input type="number" class="form-control form-control-sm"
                                             name="work_days[{{ $employee->id }}]"
                                             value="{{ old('work_days.' . $employee->id, $draftWorkDays[$employee->id] ?? '') }}"
+                                            data-employee-id="{{ $employee->id }}"
                                             min="0" @disabled($payrollPeriod->status !== 'draft')>
-                                    </td>
-                                    <td>
-                                        <input type="number"
-                                            class="form-control form-control-sm @error('leave_joint_days.' . $employee->id) is-invalid @enderror"
-                                            name="leave_joint_days[{{ $employee->id }}]"
-                                            value="{{ old('leave_joint_days.' . $employee->id, $draftLeaveJoint[$employee->id] ?? '') }}"
-                                            min="0" @disabled($payrollPeriod->status !== 'draft')>
-                                        @error('leave_joint_days.' . $employee->id)
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </td>
-                                    <td>
-                                        <input type="number"
-                                            class="form-control form-control-sm @error('leave_personal_days.' . $employee->id) is-invalid @enderror"
-                                            name="leave_personal_days[{{ $employee->id }}]"
-                                            value="{{ old('leave_personal_days.' . $employee->id, $draftLeavePersonal[$employee->id] ?? '') }}"
-                                            min="0" @disabled($payrollPeriod->status !== 'draft')>
-                                        @error('leave_personal_days.' . $employee->id)
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </td>
-
+                                </div>
+                                
+                                @if ($earnings->count() > 0)
+                                    <div class="col-12">
+                                        <h5 class="text-success mt-2">Pendapatan</h5>
+                                    </div>
                                     @foreach ($earnings as $earning)
-                                        <td>
+                                        <div class="col-3">
+                                            <label class="form-label small">{{ $earning->name }}</label>
                                             <input type="number" class="form-control form-control-sm input-earning"
                                                 name="payslips[{{ $employee->id }}][{{ $earning->id }}]"
                                                 value="{{ old('payslips.' . $employee->id . '.' . $earning->id, $draftAmounts[$employee->id][$earning->id] ?? '') }}"
                                                 min="0" data-employee-id="{{ $employee->id }}"
-                                                data-component-id="{{ $earning->id }}" @disabled($payrollPeriod->status !== 'draft')>
-                                        </td>
+                                                data-component-id="{{ $earning->id }}" {{ $loop->first ? 'readonly' : '' }} @disabled($payrollPeriod->status !== 'draft')>
+                                        </div>
                                     @endforeach
-
+                                @endif
+                                
+                                @if ($deductions->count() > 0)
+                                    <div class="col-12">
+                                        <h5 class="text-danger mt-2">Potongan</h5>
+                                    </div>
                                     @foreach ($deductions as $deduction)
-                                        <td>
-                                            <input type="number"
-                                                class="form-control form-control-sm bg-secondary readonly-deduction"
+                                        <div class="col-3">
+                                            <label class="form-label small">{{ $deduction->name }}</label>
+                                            <input type="number" class="form-control form-control-sm"
                                                 name="payslips[{{ $employee->id }}][{{ $deduction->id }}]"
                                                 value="{{ old('payslips.' . $employee->id . '.' . $deduction->id, $draftAmounts[$employee->id][$deduction->id] ?? '') }}"
-                                                min="0" readonly data-employee-id="{{ $employee->id }}"
+                                                min="0" data-employee-id="{{ $employee->id }}"
                                                 data-component-id="{{ $deduction->id }}"
-                                                data-component-name="{{ $deduction->name }}"
-                                                data-percentage="{{ $deduction->percentage }}"
-                                                data-max-cap="{{ $deduction->max_cap }}" @disabled($payrollPeriod->status !== 'draft')>
-                                        </td>
+                                                data-component-name="{{ $deduction->name }}" @disabled($payrollPeriod->status !== 'draft')>
+                                        </div>
                                     @endforeach
-
+                                @endif
+                                
+                                @if ($taxes->count() > 0)
+                                    <div class="col-12">
+                                        <h5 class="text-warning mb-2">Pajak</h5>
+                                    </div>
                                     @foreach ($taxes as $tax)
-                                        <td>
+                                        <div class="col-3">
+                                            <label class="form-label small">{{ $tax->name }}</label>
                                             <input type="number"
                                                 class="form-control form-control-sm bg-secondary readonly-tax"
                                                 name="payslips[{{ $employee->id }}][{{ $tax->id }}]"
@@ -227,20 +214,22 @@
                                                 data-component-id="{{ $tax->id }}"
                                                 data-component-name="{{ $tax->name }}" data-field="tax_component"
                                                 @disabled($payrollPeriod->status !== 'draft')>
-                                        </td>
+                                        </div>
                                     @endforeach
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm bg-secondary fw-bold"
-                                            name="netto[{{ $employee->id }}]"
-                                            value="{{ old('netto.' . $employee->id, $draftNetto[$employee->id] ?? '') }}"
-                                            min="0" readonly data-employee-id="{{ $employee->id }}"
-                                            data-field="netto" @disabled($payrollPeriod->status !== 'draft')>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                                @endif
+                                
+                                <div class="col-12">
+                                    <label class="form-label small fw-bold text-primary">Netto</label>
+                                    <input type="number" class="form-control form-control-sm bg-secondary fw-bold"
+                                        name="netto[{{ $employee->id }}]"
+                                        value="{{ old('netto.' . $employee->id, $draftNetto[$employee->id] ?? '') }}"
+                                        min="0" readonly data-employee-id="{{ $employee->id }}"
+                                        data-field="netto" @disabled($payrollPeriod->status !== 'draft')>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
             </div>
             @if ($payrollPeriod->status === 'draft')
                 <div class="card-footer d-flex justify-content-end">
@@ -290,7 +279,7 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Pilih Karyawan</label>
-                        <select class="form-select" id="preview_employee_id" required>
+                        <select class="form-select" id="preview_employee_id">
                             <option value="">-- pilih --</option>
                             @foreach ($employees as $employee)
                                 <option value="{{ $employee->id }}">{{ $employee->employee_code }} -
@@ -445,141 +434,81 @@
                 return isNaN(n) ? 0 : n;
             }
 
-            function expectedDeductionAmount(employeeId, inputEl) {
-                const pct = parseFloat(inputEl.getAttribute('data-percentage') || '0');
-                const capRaw = inputEl.getAttribute('data-max-cap');
-                const cap = capRaw !== null && capRaw !== '' ? parseIntSafe(capRaw) : 0;
+            function calculateNetto(employeeId) {
+                let totalEarnings = 0;
+                let totalDeductions = 0;
+                let totalTax = 0;
 
-                let base = 0;
-                let baseLabel = 'Total Pendapatan';
-                if (BASIC_SALARY_COMPONENT_ID) {
-                    const basicEl = document.querySelector('.input-earning[data-employee-id="' + employeeId +
-                        '"][data-component-id="' + BASIC_SALARY_COMPONENT_ID + '"]');
-                    base = parseIntSafe(basicEl ? basicEl.value : 0);
-                    if (base > 0) baseLabel = 'Gaji Pokok';
-                }
-                if (!base) {
-                    const earnings = collectEarnings(employeeId);
-                    Object.keys(earnings).forEach(function(k) {
-                        base += parseIntSafe(earnings[k]);
-                    });
-                }
-                if (cap > 0) base = Math.min(base, cap);
-
-                const expected = Math.round(base * (pct / 100));
-                return {
-                    expected: expected,
-                    base: base,
-                    baseLabel: baseLabel,
-                    pct: pct,
-                    cap: cap
-                };
-            }
-
-            function validateAgainstExpected(employeeId, options) {
-                const opts = options || {};
-                const validateAll = !!opts.validateAll;
-                if (!employeeId) return;
-
-                document.querySelectorAll('.readonly-deduction[data-employee-id="' + employeeId + '"]').forEach(
-                    function(el) {
-                        const currentRaw = el.value;
-                        const currentHasValue = currentRaw !== null && currentRaw !== '';
-
-                        if (flexibleMode) {
-                            if (el.getAttribute('data-manual') !== '1') {
-                                clearWarning(el);
-                                return;
-                            }
-                        } else {
-                            if (!validateAll && !currentHasValue) {
-                                clearWarning(el);
-                                return;
-                            }
-                            if (validateAll && !currentHasValue) {
-                                clearWarning(el);
-                                return;
-                            }
-                        }
-
-                        const current = parseIntSafe(el.value);
-                        const info = expectedDeductionAmount(employeeId, el);
-                        if (current === info.expected) {
-                            clearWarning(el);
-                            return;
-                        }
-
-                        const name = el.getAttribute('data-component-name') || 'Potongan';
-                        const formula = info.cap > 0 ?
-                            `Seharusnya value ${name} adalah min(${info.baseLabel}, ${info.cap}) x ${info.pct} / 100 = ${info.expected}` :
-                            `Seharusnya value ${name} adalah ${info.baseLabel} x ${info.pct} / 100 = ${info.expected}`;
-                        showWarning(el, formula);
-                    });
-
-                const expectedPayload = expectedByEmployee[employeeId] || {};
-                const expTaxes = expectedPayload.taxes || {};
-                const expNetto = expectedPayload.netto;
-
-                document.querySelectorAll('.readonly-tax[data-employee-id="' + employeeId + '"]').forEach(function(
-                    el) {
-                    const currentRaw = el.value;
-                    const currentHasValue = currentRaw !== null && currentRaw !== '';
-
-                    if (flexibleMode) {
-                        if (el.getAttribute('data-manual') !== '1') {
-                            clearWarning(el);
-                            return;
-                        }
-                    } else {
-                        if (!validateAll && !currentHasValue) {
-                            clearWarning(el);
-                            return;
-                        }
-                        if (validateAll && !currentHasValue) {
-                            clearWarning(el);
-                            return;
-                        }
-                    }
-
-                    const componentId = el.getAttribute('data-component-id');
-                    const expected = expTaxes && componentId && Object.prototype.hasOwnProperty.call(
-                            expTaxes, componentId) ?
-                        parseIntSafe(expTaxes[componentId]) :
-                        0;
-
-                    const current = parseIntSafe(el.value);
-                    if (current === expected) {
-                        clearWarning(el);
-                        return;
-                    }
-
-                    const name = el.getAttribute('data-component-name') || 'Pajak';
-                    showWarning(el, `Seharusnya value ${name} adalah ${expected}`);
+                document.querySelectorAll('.input-earning[data-employee-id="' + employeeId + '"]').forEach(function(el) {
+                    totalEarnings += parseIntSafe(el.value);
                 });
 
-                const nettoEl = document.querySelector('[data-field="netto"][data-employee-id="' + employeeId +
-                    '"]');
-                if (nettoEl && expNetto !== undefined) {
-                    const currentNettoRaw = nettoEl.value;
-                    const currentNettoHasValue = currentNettoRaw !== null && currentNettoRaw !== '';
-                    const shouldCheckNetto = flexibleMode ? (nettoEl.getAttribute('data-manual') === '1') : (
-                        validateAll ? currentNettoHasValue : currentNettoHasValue);
-                    if (shouldCheckNetto) {
-                        const currentNetto = parseIntSafe(nettoEl.value);
-                        if (currentNetto === parseIntSafe(expNetto)) {
-                            clearWarning(nettoEl);
-                        } else {
-                            showWarning(nettoEl,
-                                `Seharusnya value Netto adalah Total Pendapatan - Total Potongan - PPh 21 = ${expNetto}`
-                                );
-                        }
-                    } else {
-                        clearWarning(nettoEl);
+                document.querySelectorAll('input[data-employee-id="' + employeeId + '"][data-component-id]').forEach(function(el) {
+                    const componentId = el.getAttribute('data-component-id');
+                    const componentType = getComponentType(componentId);
+                    if (componentType === 'deduction') {
+                        totalDeductions += parseIntSafe(el.value);
+                    } else if (componentType === 'tax') {
+                        totalTax += parseIntSafe(el.value);
                     }
-                } else {
-                    clearWarning(nettoEl);
+                });
+
+                // Get work days and default work days
+                const workDaysEl = document.querySelector('[name="work_days[' + employeeId + ']"]');
+                const workDays = workDaysEl ? parseIntSafe(workDaysEl.value) : 0;
+                const defaultWorkDays = {{ $payrollPeriod->default_work_days ?? 25 }};
+                
+                // Calculate and update netto
+                let netto = totalEarnings - totalDeductions - totalTax;
+                
+                // Apply potongan jika kurang dari default hari kerja
+                if (workDays < defaultWorkDays && workDays > 0) {
+                    // Get basic salary untuk perhitungan potongan
+                    const basicSalaryEl = document.querySelector('.input-earning[data-employee-id="' + employeeId + '"][readonly]');
+                    let basicSalary = 0;
+                    if (basicSalaryEl) {
+                        basicSalary = parseIntSafe(basicSalaryEl.value);
+                    } else {
+                        // Fallback ke earning pertama jika tidak ada readonly
+                        const firstEarningEl = document.querySelector('.input-earning[data-employee-id="' + employeeId + '"]');
+                        if (firstEarningEl) {
+                            basicSalary = parseIntSafe(firstEarningEl.value);
+                        }
+                    }
+                    
+                    // Hitung potongan per hari tidak masuk
+                    const potonganPerHari = basicSalary > 0 ? Math.round(basicSalary / defaultWorkDays) : 0;
+                    const totalPotongan = (defaultWorkDays - workDays) * potonganPerHari;
+                    
+                    // Kurangi netto dengan potongan
+                    netto = netto - totalPotongan;
+                }
+                
+                const nettoEl = document.querySelector('[data-field="netto"][data-employee-id="' + employeeId + '"]');
+                if (nettoEl) {
+                    nettoEl.value = netto;
+                }
+                
+                // Update total gaji di header
+                const totalGajiEl = document.getElementById('totalGaji' + employeeId);
+                if (totalGajiEl) {
+                    totalGajiEl.textContent = 'Total Gaji : Rp ' + netto.toLocaleString('id-ID');
                 }
             }
+
+            function getComponentType(componentId) {
+                // This would ideally come from a data attribute or global variable
+                // For now, we'll determine based on the input's class or context
+                const el = document.querySelector('[data-component-id="' + componentId + '"]');
+                if (el) {
+                    if (el.classList.contains('input-earning')) return 'earning';
+                    if (el.classList.contains('readonly-tax')) return 'tax';
+                    // Default to deduction for other inputs
+                    return 'deduction';
+                }
+                return 'deduction';
+            }
+
 
             function setFlexibleMode(enabled, options) {
                 const opts = options || {};
@@ -588,15 +517,15 @@
                 const btn = document.getElementById('btnFlexibleMode');
                 if (btn) btn.textContent = flexibleMode ? 'Flexible Mode: ON' : 'Flexible Mode: OFF';
 
-                document.querySelectorAll('.readonly-deduction, .readonly-tax, [data-field="netto"]').forEach(
+                document.querySelectorAll('.readonly-tax, [data-field="netto"]').forEach(
                     function(el) {
                         el.readOnly = !flexibleMode;
                         if (flexibleMode) {
                             el.classList.remove('bg-secondary');
+                            el.setAttribute('data-manual', '0');
                         } else {
                             el.classList.add('bg-secondary');
                             el.removeAttribute('data-manual');
-                            clearWarning(el);
                         }
                     });
 
@@ -651,32 +580,96 @@
                 }, 400);
             }
 
+            // Add event listeners for work days inputs
+            document.querySelectorAll('[name^="work_days["]').forEach(function(el) {
+                const defaultWorkDays = {{ $payrollPeriod->default_work_days ?? 25 }};
+                
+                // Set max attribute to default work days
+                el.setAttribute('max', defaultWorkDays);
+                
+                el.addEventListener('input', function() {
+                    const employeeId = this.getAttribute('data-employee-id');
+                    if (!employeeId) return;
+                    
+                    // Validate max value
+                    const value = parseIntSafe(this.value);
+                    if (value > defaultWorkDays) {
+                        this.value = defaultWorkDays;
+                    }
+                    
+                    calculateNetto(employeeId);
+                });
+                el.addEventListener('change', function() {
+                    const employeeId = this.getAttribute('data-employee-id');
+                    if (!employeeId) return;
+                    
+                    // Validate max value
+                    const value = parseIntSafe(this.value);
+                    if (value > defaultWorkDays) {
+                        this.value = defaultWorkDays;
+                    }
+                    
+                    calculateNetto(employeeId);
+                });
+            });
+
             document.querySelectorAll('.input-earning').forEach(function(el) {
                 el.addEventListener('input', function() {
                     const employeeId = this.getAttribute('data-employee-id');
                     if (!employeeId) return;
-                    triggerCalc(employeeId);
+                    calculateNetto(employeeId);
                 });
                 el.addEventListener('change', function() {
                     const employeeId = this.getAttribute('data-employee-id');
                     if (!employeeId) return;
-                    triggerCalc(employeeId);
+                    calculateNetto(employeeId);
                 });
             });
 
-            document.querySelectorAll('.readonly-deduction, .readonly-tax, [data-field="netto"]').forEach(function(
-                el) {
+            // Add event listeners for deduction inputs
+            document.querySelectorAll('input[data-employee-id][data-component-id]').forEach(function(el) {
+                // Skip earnings and tax inputs, only handle deductions
+                if (el.classList.contains('input-earning') || el.classList.contains('readonly-tax')) return;
+                
+                el.addEventListener('input', function() {
+                    const employeeId = this.getAttribute('data-employee-id');
+                    if (!employeeId) return;
+                    calculateNetto(employeeId);
+                });
+                el.addEventListener('change', function() {
+                    const employeeId = this.getAttribute('data-employee-id');
+                    if (!employeeId) return;
+                    calculateNetto(employeeId);
+                });
+            });
+
+            // Add event listeners for tax inputs
+            document.querySelectorAll('.readonly-tax').forEach(function(el) {
                 el.addEventListener('input', function() {
                     if (!flexibleMode) return;
                     this.setAttribute('data-manual', '1');
                     const employeeId = this.getAttribute('data-employee-id');
-                    validateAgainstExpected(employeeId);
+                    if (employeeId) calculateNetto(employeeId);
                 });
                 el.addEventListener('change', function() {
                     if (!flexibleMode) return;
                     this.setAttribute('data-manual', '1');
                     const employeeId = this.getAttribute('data-employee-id');
-                    validateAgainstExpected(employeeId);
+                    if (employeeId) calculateNetto(employeeId);
+                });
+            });
+
+            // Handle netto input (keep manual override functionality)
+            document.querySelectorAll('[data-field="netto"]').forEach(function(el) {
+                el.addEventListener('input', function() {
+                    if (!flexibleMode) return;
+                    this.setAttribute('data-manual', '1');
+                    const employeeId = this.getAttribute('data-employee-id');
+                });
+                el.addEventListener('change', function() {
+                    if (!flexibleMode) return;
+                    this.setAttribute('data-manual', '1');
+                    const employeeId = this.getAttribute('data-employee-id');
                 });
             });
 
@@ -686,14 +679,16 @@
                 });
 
                 const initEmployeeIds = new Set();
+                // Get employee IDs from both desktop and mobile views
                 document.querySelectorAll('.input-earning[data-employee-id]').forEach(function(el) {
                     initEmployeeIds.add(el.getAttribute('data-employee-id'));
                 });
+                document.querySelectorAll('.employee-card[data-employee-id]').forEach(function(el) {
+                    initEmployeeIds.add(el.getAttribute('data-employee-id'));
+                });
                 initEmployeeIds.forEach(function(eid) {
-                    requestCalc(eid, {
-                        respectExisting: true,
-                        validateAll: true
-                    });
+                    // Calculate initial netto for all employees
+                    calculateNetto(eid);
                 });
             }
 
@@ -775,6 +770,30 @@
                     window.open(url, '_blank');
                 });
             }
+
+            // Add event listeners for collapse toggle icons
+            document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function(element) {
+                element.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-bs-target');
+                    const iconId = targetId.replace('#employeeCollapse', '#collapseIcon');
+                    const icon = document.querySelector(iconId);
+                    
+                    if (icon) {
+                        const collapseElement = document.querySelector(targetId);
+                        if (collapseElement) {
+                            collapseElement.addEventListener('show.bs.collapse', function() {
+                                icon.classList.remove('bi-chevron-down');
+                                icon.classList.add('bi-chevron-up');
+                            });
+                            
+                            collapseElement.addEventListener('hide.bs.collapse', function() {
+                                icon.classList.remove('bi-chevron-up');
+                                icon.classList.add('bi-chevron-down');
+                            });
+                        }
+                    }
+                });
+            });
         });
     </script>
 

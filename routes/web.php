@@ -43,6 +43,10 @@ Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::get('payroll-periods/data', [PayrollPeriodController::class, 'data'])->name('payroll-periods.data');
     Route::resource('payroll-periods', PayrollPeriodController::class);
 
+    Route::get('attendances/data', [\App\Http\Controllers\AttendanceController::class, 'data'])->name('attendances.data');
+    Route::post('attendances/import', [\App\Http\Controllers\AttendanceController::class, 'importExcel'])->name('attendances.import');
+    Route::resource('attendances', \App\Http\Controllers\AttendanceController::class);
+
     Route::get('employees/data', [\App\Http\Controllers\EmployeeController::class, 'data'])->name('employees.data');
     Route::resource('employees', \App\Http\Controllers\EmployeeController::class);
 

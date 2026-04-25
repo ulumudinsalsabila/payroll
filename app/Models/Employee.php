@@ -29,13 +29,15 @@ class Employee extends Model
         'leave_balance',
         'npwp_number',
         'ptkp_status',
-        'ter_category'
+        'ter_category',
+        'basic_salary'
     ];
 
     protected $casts = [
         'join_date' => 'date',
         'leave_balance' => 'integer',
         'is_active' => 'boolean',
+        'basic_salary' => 'integer',
     ];
 
     public function payslips()

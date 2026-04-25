@@ -20,7 +20,8 @@ class PayrollPeriod extends Model
         'description', 
         'status', 
         'is_leave_distributed', 
-        'published_at'
+        'published_at',
+        'default_work_days'
     ];
 
     protected $casts = [

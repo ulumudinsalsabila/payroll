@@ -57,6 +57,7 @@
                         <th>Tahun</th>
                         <th>Bulan</th>
                         <th>Deskripsi</th>
+                        <th>Hari Kerja</th>
                         <th>Status</th>
                         <th class="text-end">Aksi</th>
                     </tr>
@@ -109,6 +110,11 @@
                                     <option value="{{ $y }}">{{ $y }}</option>
                                 @endfor
                             </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hari Kerja Default</label>
+                            <input type="number" name="default_work_days" id="default_work_days" class="form-control" value="25" min="1" max="31" required>
+                            <small class="form-text text-muted">Default hari kerja untuk periode ini (standar: 25 hari)</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Deskripsi</label>
@@ -208,6 +214,13 @@
                         name: 'description',
                         render: function(data) {
                             return esc(data || '');
+                        }
+                    },
+                    {
+                        data: 'default_work_days',
+                        name: 'default_work_days',
+                        render: function(data) {
+                            return esc(data || 25) + ' hari';
                         }
                     },
                     {

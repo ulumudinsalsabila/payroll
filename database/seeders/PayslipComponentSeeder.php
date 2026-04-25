@@ -10,12 +10,22 @@ class PayslipComponentSeeder extends Seeder
     public function run(): void
     {
         $components = [
-            ['name' => 'Gaji Pokok', 'type' => 'earning', 'percentage' => null, 'max_cap' => null],
-            ['name' => 'Lembur dan Bonus', 'type' => 'earning', 'percentage' => null, 'max_cap' => null],
-            ['name' => 'Jaminan Hari Tua', 'type' => 'deduction', 'percentage' => 5.70],
-            ['name' => 'Jaminan Kecelakaan Kerja', 'type' => 'deduction', 'percentage' => 0.54],
-            ['name' => 'Jaminan Kematian', 'type' => 'deduction', 'percentage' => 0.30],
-            ['name' => 'PPh Pasal 21', 'type' => 'tax', 'percentage' => null, 'max_cap' => null],
+            // Pendapatan
+            ['name' => 'Gaji Pokok', 'type' => 'earning'],
+            ['name' => 'Tunjangan Jabatan', 'type' => 'earning'],
+            ['name' => 'Tunjangan Komparatif', 'type' => 'earning'],
+            ['name' => 'Tunjangan Transport', 'type' => 'earning'],
+            ['name' => 'JAMSOSTEK', 'type' => 'earning'],
+            ['name' => 'Lain-Lain', 'type' => 'earning'],
+            ['name' => 'Uang Lembur', 'type' => 'earning'],
+            
+            // Potongan
+            ['name' => 'Kas Bon', 'type' => 'deduction'],
+            ['name' => 'Angsuran M.', 'type' => 'deduction'],
+            ['name' => 'Ang. Tambahan', 'type' => 'deduction'],
+            ['name' => 'Bunga', 'type' => 'deduction'],
+            ['name' => 'JAMSOSTEK', 'type' => 'deduction'],
+            ['name' => 'Lain-Lain', 'type' => 'deduction'],
         ];
 
         foreach ($components as $comp) {

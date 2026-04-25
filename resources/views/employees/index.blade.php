@@ -72,9 +72,8 @@
                         <th>Nama</th>
                         <th>Posisi</th>
                         <th>Departemen</th>
-                        <th>PTKP</th>
-                        <th>TER</th>
                         <th>Sisa Cuti</th>
+                        <th class="text-end">Gaji Pokok</th>
                         <th class="text-end">Aksi</th>
                     </tr>
                 </thead>
@@ -154,32 +153,14 @@
                                 <input type="text" name="npwp_number" id="npwp_number" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Status PTKP</label>
-                                <select name="ptkp_status" id="ptkp_status" class="form-select" required>
-                                    <option value="">- Pilih -</option>
-                                    <option value="TK/0">TK/0</option>
-                                    <option value="TK/1">TK/1</option>
-                                    <option value="TK/2">TK/2</option>
-                                    <option value="TK/3">TK/3</option>
-                                    <option value="K/0">K/0</option>
-                                    <option value="K/1">K/1</option>
-                                    <option value="K/2">K/2</option>
-                                    <option value="K/3">K/3</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Kategori TER</label>
-                                <select name="ter_category" id="ter_category" class="form-select" required>
-                                    <option value="">- Pilih -</option>
-                                    <option value="A">A</option>
-                                    <option value="B">B</option>
-                                    <option value="C">C</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
                                 <label class="form-label">Sisa Cuti</label>
                                 <input type="number" name="leave_balance" id="leave_balance" class="form-control"
                                     min="0" value="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Gaji Pokok</label>
+                                <input type="number" name="basic_salary" id="basic_salary" class="form-control"
+                                    min="0" placeholder="0">
                             </div>
                         </div>
                     </div>
@@ -221,6 +202,15 @@
 
 @push('scripts')
     <script>
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
         $(document).ready(function() {
             function esc(v) {
                 return $('<div/>').text(v == null ? '' : String(v)).html();
@@ -264,24 +254,18 @@
                         }
                     },
                     {
-                        data: 'ptkp_status',
-                        name: 'ptkp_status',
-                        render: function(data) {
-                            return esc(data);
-                        }
-                    },
-                    {
-                        data: 'ter_category',
-                        name: 'ter_category',
-                        render: function(data) {
-                            return esc(data);
-                        }
-                    },
-                    {
                         data: 'leave_balance',
                         name: 'leave_balance',
                         render: function(data) {
                             return esc(data);
+                        }
+                    },
+                    {
+                        data: 'basic_salary',
+                        name: 'basic_salary',
+                        className: 'text-end',
+                        render: function(data) {
+                            return data ? formatRupiah(data) : '0';
                         }
                     },
                     {
@@ -354,9 +338,8 @@
                 $('#bank_account_number').val(rowData.bank_account_number || '');
                 $('#join_date').val(rowData.join_date || '');
                 $('#npwp_number').val(rowData.npwp_number || '');
-                $('#ptkp_status').val(rowData.ptkp_status || '');
-                $('#ter_category').val(rowData.ter_category || '');
                 $('#leave_balance').val(rowData.leave_balance == null ? '0' : String(rowData.leave_balance));
+                $('#basic_salary').val(rowData.basic_salary == null ? '0' : String(rowData.basic_salary));
 
                 const form = document.getElementById('employeeForm');
                 form.action = `{{ url('employees') }}/${id}`;
@@ -386,9 +369,8 @@
                 $('#bank_account_number').val('');
                 $('#join_date').val('');
                 $('#npwp_number').val('');
-                $('#ptkp_status').val('');
-                $('#ter_category').val('');
                 $('#leave_balance').val('0');
+                $('#basic_salary').val('');
             });
 
             $('#employees_table').on('click', '.btnEditEmployee', function() {

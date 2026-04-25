@@ -33,12 +33,6 @@
                                         class="bullet bullet-dot"></span></span><span class="menu-title">Komponen
                                     Gaji</span></a>
                         </div>
-                        <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('ter-rates.*') ? 'active' : '' }}"
-                                href="{{ route('ter-rates.index') }}"><span class="menu-bullet"><span
-                                        class="bullet bullet-dot"></span></span><span class="menu-title">Referensi Tarif
-                                    TER</span></a>
-                        </div>
                     </div>
                 </div>
 

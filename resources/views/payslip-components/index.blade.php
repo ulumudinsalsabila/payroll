@@ -43,7 +43,6 @@
                     <tr>
                         <th>Nama Komponen</th>
                         <th>Tipe</th>
-                        <th>Persentase (%)</th>
                         <th>Status</th>
                         <th class="text-end">Aksi</th>
                     </tr>
@@ -83,16 +82,6 @@
                                     <option value="deduction">Potongan</option>
                                     <option value="tax">Pajak</option>
                                 </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Persentase (%)</label>
-                                <input type="number" name="percentage" id="percentage" class="form-control" step="0.01"
-                                    min="0" max="100">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">Batas Maksimal Upah / Max Cap</label>
-                                <input type="number" name="max_cap" id="max_cap" class="form-control" min="0">
-                                <div class="form-text">Kosongkan jika tidak ada batas maksimal</div>
                             </div>
                             <div class="col-12">
                                 <div class="form-check form-switch">
@@ -181,17 +170,6 @@
                         }
                     },
                     {
-                        data: 'percentage',
-                        name: 'percentage',
-                        render: function(data, type, row) {
-                            if (row.type !== 'deduction') return '-';
-                            if (data == null || data === '') return '-';
-                            const n = Number(data);
-                            if (Number.isNaN(n)) return '-';
-                            return n.toFixed(2);
-                        }
-                    },
-                    {
                         data: 'is_active',
                         name: 'is_active',
                         render: function(data) {
@@ -254,7 +232,9 @@
             // Filter status (server-side)
             $('#filter_component_status').on('change', function() {
                 const v = this.value;
-                dt.column(3).search(v || '').draw();
+                if (v) {
+                    dt.column(2).search(v || '').draw();
+                }
             });
 
             function toEditMode(rowData) {
@@ -262,11 +242,7 @@
                 $('#component_id').val(id);
                 $('#name').val(rowData.name || '');
                 $('#type').val(rowData.type || '');
-                $('#percentage').val(rowData.percentage == null ? '' : String(rowData.percentage));
-                $('#max_cap').val(rowData.max_cap == null ? '' : String(rowData.max_cap));
                 $('#is_active').prop('checked', String(rowData.is_active) === '1');
-
-                toggleCalcFields();
 
                 const form = document.getElementById('componentForm');
                 form.action = `{{ url('payslip-components') }}/${id}`;
@@ -286,26 +262,7 @@
                 $('#component_id').val('');
                 $('#name').val('');
                 $('#type').val('');
-                $('#percentage').val('');
-                $('#max_cap').val('');
                 $('#is_active').prop('checked', true);
-
-                toggleCalcFields();
-            });
-
-            function toggleCalcFields() {
-                const t = $('#type').val();
-                const isDeduction = t === 'deduction';
-                $('#percentage').prop('disabled', !isDeduction).prop('required', isDeduction);
-                $('#max_cap').prop('disabled', !isDeduction);
-                if (!isDeduction) {
-                    $('#percentage').val('');
-                    $('#max_cap').val('');
-                }
-            }
-
-            $('#type').on('change', function() {
-                toggleCalcFields();
             });
 
             $('#components_table').on('click', '.btnEditComponent', function() {
