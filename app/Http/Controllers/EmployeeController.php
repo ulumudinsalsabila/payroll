@@ -48,6 +48,7 @@ class EmployeeController extends Controller
             'join_date',
             'leave_balance',
             'npwp_number',
+            'fingerprint_id',
             'basic_salary',
         ]);
 
@@ -102,6 +103,7 @@ class EmployeeController extends Controller
             'npwp_number' => ['nullable','string','max:100'],
             'ptkp_status' => ['nullable','string'],
             'ter_category' => ['nullable','string'],
+            'fingerprint_id' => ['nullable','string','max:255'],
             'basic_salary' => ['nullable','integer','min:0'],
         ]);
 
@@ -168,6 +170,7 @@ class EmployeeController extends Controller
             'npwp_number' => ['nullable','string','max:100'],
             'ptkp_status' => ['nullable','string'],
             'ter_category' => ['nullable','string'],
+            'fingerprint_id' => ['nullable','string','max:255'],
             'basic_salary' => ['nullable','integer','min:0'],
         ]);
 

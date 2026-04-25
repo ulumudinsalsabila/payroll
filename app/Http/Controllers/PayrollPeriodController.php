@@ -7,6 +7,7 @@ use App\Imports\PayslipTemplateImport;
 use App\Models\PayrollPeriod;
 use App\Models\ActivityLog;
 use App\Models\Employee;
+use App\Models\Attendance;
 use App\Models\LeaveTransaction;
 use App\Models\Payslip;
 use App\Models\PayslipComponent;
@@ -403,6 +404,74 @@ class PayrollPeriodController extends Controller
         }
 
         return redirect()->route('payroll-periods.show', $period->id)->with('success', $msg);
+    }
+
+    public function pullAttendance(string $payrollPeriod)
+    {
+        $period = PayrollPeriod::findOrFail($payrollPeriod);
+
+        if ($period->status !== 'draft') {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Periode ini sudah tidak dalam status draft.');
+        }
+
+        $periodMonth = $period->year . '-' . $period->month;
+        $attendances = Attendance::where('period_month', $periodMonth)->get();
+
+        if ($attendances->isEmpty()) {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Tidak ada data rekap absensi untuk periode ' . $periodMonth);
+        }
+
+        $imported = 0;
+        $paymentDate = Carbon::createFromDate((int) $period->year, (int) $period->month, 1)->endOfMonth()->toDateString();
+        $basicSalaryComponentId = PayslipComponent::where('name', 'Gaji Pokok')->value('id');
+
+        foreach ($attendances as $attendance) {
+            $employee = $attendance->employee;
+            
+            if (!$employee) {
+                $employee = Employee::where('fingerprint_id', $attendance->fingerprint_id)
+                                    ->orWhere('name', 'like', "%{$attendance->employee_name}%")
+                                    ->first();
+            }
+            
+            if (!$employee) {
+                \Log::warning("Payroll: Could not find employee for attendance record: " . $attendance->employee_name . " (ID: " . $attendance->fingerprint_id . ")");
+                continue;
+            }
+
+            // Create or get existing payslip
+            $payslip = Payslip::firstOrCreate([
+                'payroll_period_id' => $period->id,
+                'employee_id' => $employee->id,
+            ], [
+                'payment_date' => $paymentDate,
+                'status' => 'draft',
+                'basic_salary' => $employee->basic_salary ?? 0,
+                'total_earnings' => 0,
+                'total_deductions' => 0,
+                'tax_amount' => 0,
+                'net_salary' => 0,
+            ]);
+
+            // Update work days from attendance
+            $payslip->work_days = $attendance->present_days;
+            $payslip->save();
+
+            // Auto-fill Gaji Pokok if not exists
+            if ($basicSalaryComponentId && $employee->basic_salary > 0) {
+                PayslipDetail::updateOrCreate([
+                    'payslip_id' => $payslip->id,
+                    'payslip_component_id' => $basicSalaryComponentId,
+                ], [
+                    'amount' => $employee->basic_salary
+                ]);
+            }
+
+            $imported++;
+        }
+
+        return redirect()->route('payroll-periods.show', $period->id)
+            ->with('success', "Berhasil menarik data absensi untuk $imported karyawan.");
     }
 
     public function previewPdf(Request $request, string $payrollPeriod): Response

@@ -162,6 +162,11 @@
                                 <input type="number" name="basic_salary" id="basic_salary" class="form-control"
                                     min="0" placeholder="0">
                             </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fingerprint ID (Hardware)</label>
+                                <input type="text" name="fingerprint_id" id="fingerprint_id" class="form-control"
+                                    placeholder="ID di mesin fingerprint">
+                            </div>
                         </div>
                     </div>
 
@@ -340,6 +345,7 @@
                 $('#npwp_number').val(rowData.npwp_number || '');
                 $('#leave_balance').val(rowData.leave_balance == null ? '0' : String(rowData.leave_balance));
                 $('#basic_salary').val(rowData.basic_salary == null ? '0' : String(rowData.basic_salary));
+                $('#fingerprint_id').val(rowData.fingerprint_id || '');
 
                 const form = document.getElementById('employeeForm');
                 form.action = `{{ url('employees') }}/${id}`;
@@ -371,6 +377,7 @@
                 $('#npwp_number').val('');
                 $('#leave_balance').val('0');
                 $('#basic_salary').val('');
+                $('#fingerprint_id').val('');
             });
 
             $('#employees_table').on('click', '.btnEditEmployee', function() {

@@ -95,6 +95,13 @@
                             data-bs-target="#importExcelModal">
                             <i class="bi bi-file-earmark-spreadsheet me-2"></i>Import Excel
                         </button>
+                        
+                        <button type="button" class="btn btn-primary" id="btnPullAttendance">
+                            <i class="bi bi-calendar-check me-2"></i>Tarik Data Absensi
+                        </button>
+                        <form id="pullAttendanceForm" method="POST" action="{{ route('payroll-periods.pull-attendance', $payrollPeriod->id) }}" class="d-none">
+                            @csrf
+                        </form>
                     @endif
 
                     <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
@@ -768,6 +775,15 @@
                     }
                     const url = previewPdfUrl + '?employee_id=' + encodeURIComponent(employeeId);
                     window.open(url, '_blank');
+                });
+            }
+
+            const btnPullAttendance = document.getElementById('btnPullAttendance');
+            if (btnPullAttendance) {
+                btnPullAttendance.addEventListener('click', function() {
+                    if (confirm('Tarik data absensi untuk periode ini? Ini akan memperbarui Hari Kerja karyawan berdasarkan data rekap absensi yang sudah di-import.')) {
+                        document.getElementById('pullAttendanceForm').submit();
+                    }
                 });
             }
 

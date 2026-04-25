@@ -30,6 +30,7 @@ class Employee extends Model
         'npwp_number',
         'ptkp_status',
         'ter_category',
+        'fingerprint_id',
         'basic_salary'
     ];
 

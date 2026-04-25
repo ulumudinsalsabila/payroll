@@ -36,7 +36,24 @@
                     </div>
                 </div>
 
-                <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
+                <div class="menu-item menu-accordion {{ request()->routeIs('attendances.*') ? 'here show' : '' }}" data-kt-menu-trigger="click">
+                    <span class="menu-link">
+                        <span class="menu-icon"><i class="bi bi-calendar-check fs-2"></i></span>
+                        <span class="menu-title">Absensi</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion">
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('attendances.index') ? 'active' : '' }}"
+                                href="{{ route('attendances.index') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Data Absensi</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-item menu-accordion {{ request()->routeIs('payroll-periods.*') ? 'here show' : '' }}" data-kt-menu-trigger="click">
                     <span class="menu-link">
                         <span class="menu-icon"><i class="bi bi-cash-coin fs-2"></i></span>
                         <span class="menu-title">Payroll</span>
