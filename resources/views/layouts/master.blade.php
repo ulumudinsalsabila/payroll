@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    @hasSection('page_title')
-        <title>EasyKan - Sistem Automasi Payslip - @yield('page_title')</title>
+    @if(View::hasSection('page_title'))
+        <title>PT. Hasna Utama - @yield('page_title')</title>
     @else
-        <title>EasyKan - Sistem Automasi Payslip</title>
+        <title>PT. Hasna Utama</title>
     @endif
 
     <base href="{{ asset('') }}">
@@ -94,9 +94,9 @@
                             class="d-flex align-items-center">
                             <img alt="Logo" src="{{ asset('assets/media/logos/default-small.svg') }}"
                                 class="h-30px" />
-                            <span class="ms-3 fw-bold fs-4 d-none d-sm-inline text-gray-800">
-                                EasyKan - Sistem Automasi Payslip
-                            </span>
+                            <div class="menu-item px-3 my-0">
+                                PT. Hasna Utama
+                            </div>
                         </a>
                     </div>
                     <!--end::Header logo-->
@@ -159,11 +159,9 @@
 
                     <!--begin::Sidebar logo-->
                     <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
-                        <a href="{{ auth()->check() ? route('payroll-periods.index') : route('login') }}"
-                            class="d-flex align-items-center">
-                            <img alt="Logo" src="{{ asset('assets/media/logos/default-small.svg') }}"
-                                class="h-25px app-sidebar-logo-default" />
-                            <span class="ms-3 fw-semibold text-gray-800 fs-6 sidebar-title">EasyKan</span>
+                        <a href="{{ url('/') }}" class="d-flex align-items-center">
+                            <i class="bi bi-layers text-primary fs-1"></i>
+                            <span class="ms-3 fw-semibold text-gray-800 fs-6 sidebar-title">PT. Hasna Utama</span>
                         </a>
                     </div>
                     <!--end::Sidebar logo-->
@@ -191,9 +189,8 @@
                     <!--begin::Footer-->
                     <div class="app-footer py-3 d-flex flex-column flex-md-row flex-center flex-md-stack"
                         id="kt_app_footer">
-                        <div class="text-gray-700 order-2 order-md-1 w-100 text-center">
-                            <span class="text-muted fw-semibold me-1">© {{ date('Y') }}</span>
-                            <span class="text-gray-600 fw-semibold">EasyKan - Sistem Automasi Payslip</span>
+                        <div class="text-gray-900 order-2 order-md-1">
+                            <span class="text-gray-600 fw-semibold">PT. Hasna Utama</span>
                         </div>
                     </div>
                     <!--end::Footer-->

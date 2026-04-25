@@ -53,6 +53,14 @@ Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::get('payslip-components/data', [PayslipComponentController::class, 'data'])->name('payslip-components.data');
     Route::resource('payslip-components', PayslipComponentController::class);
 
+    Route::get('products/data', [\App\Http\Controllers\ProductController::class, 'data'])->name('products.data');
+    Route::resource('products', \App\Http\Controllers\ProductController::class);
+
+    Route::get('invoices/data', [\App\Http\Controllers\InvoiceController::class, 'data'])->name('invoices.data');
+    Route::get('invoices/export', [\App\Http\Controllers\InvoiceController::class, 'exportExcel'])->name('invoices.export');
+    Route::get('invoices/{invoice}/print', [\App\Http\Controllers\InvoiceController::class, 'print'])->name('invoices.print');
+    Route::resource('invoices', \App\Http\Controllers\InvoiceController::class);
+
     Route::get('ter-rates/data', [TerRateController::class, 'data'])->name('ter-rates.data');
     Route::resource('ter-rates', TerRateController::class);
 

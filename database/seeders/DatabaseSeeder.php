@@ -13,12 +13,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::firstOrCreate(
-            ['email' => 'admin@altimeda.com'],
+        User::updateOrCreate(
+            ['email' => 'admin@hasnautama.com'],
             [
-                'name' => 'Administrator',
-                'password' => 'Qwerty123*',
+                'name' => 'Super Admin',
+                'password' => Hash::make('12345678'),
                 'role' => 'HRD',
+                'timezone' => 'Asia/Jakarta'
             ]
         );
         // \App\Models\User::factory(10)->create();

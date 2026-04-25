@@ -55,6 +55,30 @@
 
                 <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
                     <span class="menu-link">
+                        <span class="menu-icon"><i class="bi bi-receipt fs-2"></i></span>
+                        <span class="menu-title">Invoicing</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion">
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('invoices.*') ? 'active' : '' }}"
+                                href="{{ route('invoices.index') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Data Invoice</span>
+                            </a>
+                        </div>
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}"
+                                href="{{ route('products.index') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Data Barang</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
+                    <span class="menu-link">
                         <span class="menu-icon"><i class="bi bi-clipboard-data fs-2"></i></span>
                         <span class="menu-title">Laporan</span>
                         <span class="menu-arrow"></span>
@@ -67,7 +91,7 @@
                                     Logs</span></a>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
             </div>
         </div>

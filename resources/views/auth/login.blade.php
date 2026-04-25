@@ -4,14 +4,14 @@
 
 <head>
     <base href="{{ asset('') }}" />
-    <title>EasyKan - Sistem Automasi Payslip - Login</title>
+    <title>PT. Hasna Utama - Login</title>
     <meta charset="utf-8" />
-    <meta name="description" content="EasyKan - Sistem Automasi Payslip" />
-    <meta name="keywords" content="easykan, payslip, payroll, automasi" />
+    <meta name="description" content="PT. Hasna Utama" />
+    <meta name="keywords" content="hasna utama, payslip, payroll, automasi" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta property="og:locale" content="id_ID" />
     <meta property="og:type" content="article" />
-    <meta property="og:title" content="EasyKan - Sistem Automasi Payslip" />
+    <meta property="og:title" content="PT. Hasna Utama" />
     <link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico') }}" />
 
     <!-- Fonts -->
@@ -80,7 +80,7 @@
                     <img class="theme-dark-show mx-auto mw-100 w-150px w-lg-300px mb-10"
                         src="{{ asset('assets/media/auth/agency-dark.png') }}" alt="" />
 
-                    <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">EasyKan</h1>
+                    <h1 class="text-gray-800 fs-2qx fw-bold text-center mb-7">PT. Hasna Utama</h1>
                     <div class="text-gray-600 fs-base text-center">
                         Sistem Automasi Payslip<br>
                         Pengelolaan penggajian yang terintegrasi dan mudah digunakan.
@@ -103,7 +103,7 @@
 
                             <!--begin::Heading-->
                             <div class="text-center mb-11">
-                                <h1 class="text-gray-900 fw-bolder mb-3">Selamat Datang di EasyKan</h1>
+                                <h1 class="text-gray-900 fw-bolder mb-3">Selamat Datang di PT. Hasna Utama</h1>
                                 <div class="text-gray-500 fw-semibold fs-6">
                                     Silakan login menggunakan email HRD Anda
                                 </div>
