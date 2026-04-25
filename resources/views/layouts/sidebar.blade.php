@@ -14,24 +14,43 @@
                     </a>
                 </div>
 
-                <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
+                <div class="menu-item menu-accordion {{ request()->routeIs('payroll-periods.*') ? 'here show' : '' }}" data-kt-menu-trigger="click">
                     <span class="menu-link">
-                        <span class="menu-icon"><i class="bi bi-database fs-2"></i></span>
-                        <span class="menu-title">Master Data</span>
+                        <span class="menu-icon"><i class="bi bi-cash-coin fs-2"></i></span>
+                        <span class="menu-title">Payroll</span>
                         <span class="menu-arrow"></span>
                     </span>
                     <div class="menu-sub menu-sub-accordion">
                         <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
-                                href="{{ route('employees.index') }}"><span class="menu-bullet"><span
-                                        class="bullet bullet-dot"></span></span><span class="menu-title">Data
-                                    Karyawan</span></a>
+                            <a class="menu-link {{ request()->routeIs('payroll-periods.*') ? 'active' : '' }}"
+                                href="{{ route('payroll-periods.index') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Periode Gaji</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
+                    <span class="menu-link">
+                        <span class="menu-icon"><i class="bi bi-receipt fs-2"></i></span>
+                        <span class="menu-title">Invoicing</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion">
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('invoices.*') ? 'active' : '' }}"
+                                href="{{ route('invoices.index') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Data Invoice</span>
+                            </a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('payslip-components.*') ? 'active' : '' }}"
-                                href="{{ route('payslip-components.index') }}"><span class="menu-bullet"><span
-                                        class="bullet bullet-dot"></span></span><span class="menu-title">Komponen
-                                    Gaji</span></a>
+                            <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}"
+                                href="{{ route('products.index') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Data Barang</span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -53,43 +72,25 @@
                     </div>
                 </div>
 
-                <div class="menu-item menu-accordion {{ request()->routeIs('payroll-periods.*') ? 'here show' : '' }}" data-kt-menu-trigger="click">
-                    <span class="menu-link">
-                        <span class="menu-icon"><i class="bi bi-cash-coin fs-2"></i></span>
-                        <span class="menu-title">Payroll</span>
-                        <span class="menu-arrow"></span>
-                    </span>
-                    <div class="menu-sub menu-sub-accordion">
-                        <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('payroll-periods.*') ? 'active' : '' }}"
-                                href="{{ route('payroll-periods.index') }}">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Periode Gaji</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
+                
                 <div class="menu-item menu-accordion" data-kt-menu-trigger="click">
                     <span class="menu-link">
-                        <span class="menu-icon"><i class="bi bi-receipt fs-2"></i></span>
-                        <span class="menu-title">Invoicing</span>
+                        <span class="menu-icon"><i class="bi bi-database fs-2"></i></span>
+                        <span class="menu-title">Master Data</span>
                         <span class="menu-arrow"></span>
                     </span>
                     <div class="menu-sub menu-sub-accordion">
                         <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('invoices.*') ? 'active' : '' }}"
-                                href="{{ route('invoices.index') }}">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Data Invoice</span>
-                            </a>
+                            <a class="menu-link {{ request()->routeIs('employees.*') ? 'active' : '' }}"
+                                href="{{ route('employees.index') }}"><span class="menu-bullet"><span
+                                        class="bullet bullet-dot"></span></span><span class="menu-title">Data
+                                    Karyawan</span></a>
                         </div>
                         <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}"
-                                href="{{ route('products.index') }}">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Data Barang</span>
-                            </a>
+                            <a class="menu-link {{ request()->routeIs('payslip-components.*') ? 'active' : '' }}"
+                                href="{{ route('payslip-components.index') }}"><span class="menu-bullet"><span
+                                        class="bullet bullet-dot"></span></span><span class="menu-title">Komponen
+                                    Gaji</span></a>
                         </div>
                     </div>
                 </div>

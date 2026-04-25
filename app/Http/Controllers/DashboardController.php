@@ -15,21 +15,6 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $totalEmployees = Employee::count();
-
-        $latestPeriod = PayrollPeriod::latest()->first();
-
-        $totalExpense = 0;
-        if ($latestPeriod) {
-            $totalExpense = (int) $latestPeriod->payslips()->sum('net_salary');
-        }
-
-        $recentLogs = ActivityLog::with('user')->latest()->limit(5)->get();
-
-        $todayLogCount = ActivityLog::query()
-            ->whereDate('created_at', Carbon::today())
-            ->count();
-
         // Handle Filter
         $filterPeriod = $request->query('period', Carbon::now()->format('Y-m'));
         try {
@@ -42,6 +27,28 @@ class DashboardController extends Controller
             $filterYear = $carbonFilter->year;
             $filterPeriod = $carbonFilter->format('Y-m');
         }
+
+        $totalEmployees = Employee::count();
+
+        // Payroll Stats based on Filter
+        $filteredPeriod = PayrollPeriod::where('month', str_pad($filterMonth, 2, '0', STR_PAD_LEFT))
+            ->where('year', (string) $filterYear)
+            ->first();
+
+        $totalExpense = 0;
+        if ($filteredPeriod) {
+            $totalExpense = (int) $filteredPeriod->payslips()->sum('net_salary');
+        }
+
+        $latestPeriod = $filteredPeriod; // Use the filtered one for display info
+
+        $recentLogs = ActivityLog::with('user')->latest()->limit(5)->get();
+
+        $todayLogCount = ActivityLog::query()
+            ->whereDate('created_at', Carbon::today())
+            ->count();
+
+
 
         $currentYear = Carbon::now()->year;
         $publishedPeriods = PayrollPeriod::query()
@@ -92,6 +99,8 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $filterName = $carbonFilter->translatedFormat('F Y');
+
         // Department Distribution
         $deptDistribution = Employee::query()
             ->select('department', DB::raw('count(*) as count'))
@@ -110,6 +119,7 @@ class DashboardController extends Controller
             'avgPresence',
             'deptDistribution',
             'filterPeriod',
+            'filterName',
             'recentInvoices',
             'topPresence'
         ));

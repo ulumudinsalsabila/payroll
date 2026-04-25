@@ -45,7 +45,7 @@
                         <div>
                             <div class="text-info fw-bold fs-7 text-uppercase mb-1">Rerata Kehadiran</div>
                             <div class="fs-1 fw-bold text-gray-800">{{ number_format((float) $avgPresence, 1, ',', '.') }}</div>
-                            <div class="text-muted small">Hari / Bulan ini</div>
+                            <div class="text-muted small">Hari / {{ $filterName }}</div>
                         </div>
                         <div class="symbol symbol-50px">
                             <div class="symbol-label bg-info text-white shadow">
@@ -64,7 +64,7 @@
                         <div>
                             <div class="text-success fw-bold fs-7 text-uppercase mb-1">Total Pemasukan</div>
                             <div class="fs-3 fw-bold text-gray-800">Rp {{ number_format((int) $incomeTotal, 0, ',', '.') }}</div>
-                            <div class="text-muted small">Bulan ini (Invoicing)</div>
+                            <div class="text-muted small">{{ $filterName }} (Invoicing)</div>
                         </div>
                         <div class="symbol symbol-50px">
                             <div class="symbol-label bg-success text-white shadow">
@@ -83,7 +83,7 @@
                         <div>
                             <div class="text-danger fw-bold fs-7 text-uppercase mb-1">Total Pengeluaran</div>
                             <div class="fs-3 fw-bold text-gray-800">Rp {{ number_format((int) $expenseTotal, 0, ',', '.') }}</div>
-                            <div class="text-muted small">Bulan ini (Invoicing)</div>
+                            <div class="text-muted small">{{ $filterName }} (Invoicing)</div>
                         </div>
                         <div class="symbol symbol-50px">
                             <div class="symbol-label bg-danger text-white shadow">
@@ -119,7 +119,7 @@
                 <div class="card-body p-9 d-flex flex-column justify-content-between">
                     <div>
                         <div class="fs-2hx fw-bold text-white mb-2">Rp {{ number_format((int) $totalExpense, 0, ',', '.') }}</div>
-                        <div class="fs-4 fw-semibold text-gray-400 mb-7">Total Gaji Bulan Ini</div>
+                        <div class="fs-4 fw-semibold text-gray-400 mb-7">Total Gaji {{ $filterName }}</div>
                         
                         <div class="d-flex flex-column gap-3">
                             <div class="d-flex align-items-center">
@@ -210,7 +210,7 @@
                 <div class="card-header border-0 pt-5">
                     <h3 class="card-title align-items-start flex-column">
                         <span class="card-label fw-bold text-dark fs-5">Kehadiran Tertinggi</span>
-                        <span class="text-muted mt-1 fw-semibold fs-7">Top 5 karyawan bulan ini</span>
+                        <span class="text-muted mt-1 fw-semibold fs-7">Top 5 karyawan {{ $filterName }}</span>
                     </h3>
                 </div>
                 <div class="card-body pt-3">
