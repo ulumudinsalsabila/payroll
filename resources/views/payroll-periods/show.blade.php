@@ -110,15 +110,24 @@
                     </button>
 
                     @if ($payrollPeriod->status === 'draft')
-                        <button type="button" class="btn btn-success" id="btnPublishPeriod">
-                            <i class="bi bi-send-check me-2"></i>Publish &amp; Send PDF
+                        <button type="button" class="btn btn-success" id="btnPublishOnly">
+                            <i class="bi bi-check-all me-2"></i>Publish Saja
                         </button>
-                        <form id="publishSendForm" method="POST"
-                            action="{{ route('payroll-periods.publish-send', ['payroll_period' => $payrollPeriod->id]) }}"
+                        <form id="publishOnlyForm" method="POST"
+                            action="{{ route('payroll-periods.publish', $payrollPeriod->id) }}"
                             class="d-none">
                             @csrf
                         </form>
-                    @else
+                    @elseif ($payrollPeriod->status === 'published')
+                        <button type="button" class="btn btn-primary" id="btnSendEmails">
+                            <i class="bi bi-envelope-at me-2"></i>Kirim Email PDF
+                        </button>
+                        <form id="sendEmailsForm" method="POST"
+                            action="{{ route('payroll-periods.send-emails', $payrollPeriod->id) }}"
+                            class="d-none">
+                            @csrf
+                        </form>
+
                         <button type="button" class="btn btn-warning" id="btnReopenDraft">
                             <i class="bi bi-arrow-counterclockwise me-2"></i>Kembalikan ke Draft
                         </button>
@@ -309,18 +318,42 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Publish &amp; Send PDF</h5>
+                        <h5 class="modal-title">Publish Periode Gaji</h5>
                         <button type="button" class="btn btn-sm btn-icon" data-bs-dismiss="modal" aria-label="Close">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <p class="mb-0">Yakin ingin publish periode ini dan mengirim PDF? Aksi ini bersifat final.</p>
+                        <p class="mb-0">Yakin ingin publish periode ini? Status akan berubah menjadi <strong>Published</strong> dan data tidak bisa diubah lagi kecuali dikembalikan ke draft.</p>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                        <button type="button" class="btn btn-success" id="btnConfirmPublishSend">
-                            <i class="bi bi-send-check me-2"></i>Publish
+                        <button type="button" class="btn btn-success" id="btnConfirmPublishOnly">
+                            <i class="bi bi-check-all me-2"></i>Publish
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if ($payrollPeriod->status === 'published')
+        <div class="modal fade" id="confirmSendEmailsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Kirim Email PDF Slip Gaji</h5>
+                        <button type="button" class="btn btn-sm btn-icon" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">Yakin ingin mengirim PDF slip gaji ke seluruh karyawan yang memiliki email? Proses ini mungkin memakan waktu beberapa menit.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="button" class="btn btn-primary" id="btnConfirmSendEmails">
+                            <i class="bi bi-envelope-at me-2"></i>Kirim Sekarang
                         </button>
                     </div>
                 </div>
@@ -699,31 +732,47 @@
                 });
             }
 
-            const publishBtn = document.getElementById('btnPublishPeriod');
-            if (publishBtn) {
-                publishBtn.addEventListener('click', function() {
+            const publishOnlyBtn = document.getElementById('btnPublishOnly');
+            if (publishOnlyBtn) {
+                publishOnlyBtn.addEventListener('click', function() {
                     const modalEl = document.getElementById('confirmPublishModal');
                     if (!modalEl) return;
-                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modal.show();
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
                 });
             }
 
-            const btnConfirmPublishSend = document.getElementById('btnConfirmPublishSend');
-            if (btnConfirmPublishSend) {
-                btnConfirmPublishSend.addEventListener('click', function() {
-                    const modalEl = document.getElementById('confirmPublishModal');
+            const btnConfirmPublishOnly = document.getElementById('btnConfirmPublishOnly');
+            if (btnConfirmPublishOnly) {
+                btnConfirmPublishOnly.addEventListener('click', function() {
+                    btnConfirmPublishOnly.disabled = true;
+                    const form = document.getElementById('publishOnlyForm');
+                    if (form) form.submit();
+                });
+            }
+
+            const sendEmailsBtn = document.getElementById('btnSendEmails');
+            if (sendEmailsBtn) {
+                sendEmailsBtn.addEventListener('click', function() {
+                    const modalEl = document.getElementById('confirmSendEmailsModal');
+                    if (!modalEl) return;
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                });
+            }
+
+            const btnConfirmSendEmails = document.getElementById('btnConfirmSendEmails');
+            if (btnConfirmSendEmails) {
+                btnConfirmSendEmails.addEventListener('click', function() {
+                    const modalEl = document.getElementById('confirmSendEmailsModal');
                     if (modalEl) {
                         try {
-                            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
-                            modalInstance.hide();
+                            bootstrap.Modal.getOrCreateInstance(modalEl).hide();
                         } catch (e) {}
                     }
 
-                    btnConfirmPublishSend.disabled = true;
-                    if (publishBtn) publishBtn.disabled = true;
+                    btnConfirmSendEmails.disabled = true;
+                    if (sendEmailsBtn) sendEmailsBtn.disabled = true;
 
-                    const form = document.getElementById('publishSendForm');
+                    const form = document.getElementById('sendEmailsForm');
                     if (!form) return;
 
                     if (typeof Swal === 'undefined') {

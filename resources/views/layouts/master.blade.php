@@ -190,7 +190,6 @@
                     <div class="app-footer py-3 d-flex flex-column flex-md-row flex-center flex-md-stack"
                         id="kt_app_footer">
                         <div class="text-gray-900 order-2 order-md-1">
-                            <span class="text-gray-600 fw-semibold">PT. Hasna Utama</span>
                         </div>
                     </div>
                     <!--end::Footer-->

@@ -37,7 +37,8 @@ Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::post('payroll-periods/{payroll_period}/save-draft', [PayrollPeriodController::class, 'saveDraft'])->name('payroll-periods.save-draft');
     Route::post('payroll-periods/{payroll_period}/import-template', [PayrollPeriodController::class, 'importTemplate'])->name('payroll-periods.import-template');
     Route::post('payroll-periods/{payroll_period}/pull-attendance', [PayrollPeriodController::class, 'pullAttendance'])->name('payroll-periods.pull-attendance');
-    Route::post('payroll-periods/{payroll_period}/publish-send', [PayrollPeriodController::class, 'publishAndSend'])->name('payroll-periods.publish-send');
+    Route::post('payroll-periods/{payroll_period}/publish', [PayrollPeriodController::class, 'publish'])->name('payroll-periods.publish');
+    Route::post('payroll-periods/{payroll_period}/send-emails', [PayrollPeriodController::class, 'sendEmails'])->name('payroll-periods.send-emails');
     Route::post('payroll-periods/{payroll_period}/reopen-draft', [PayrollPeriodController::class, 'reopenDraft'])->name('payroll-periods.reopen-draft');
     Route::get('payroll-periods/{payroll_period}/download-template', [PayrollPeriodController::class, 'downloadTemplate'])->name('payroll-periods.download-template');
     Route::get('payroll-periods/{payroll_period}/preview-pdf', [PayrollPeriodController::class, 'previewPdf'])->name('payroll-periods.preview-pdf');

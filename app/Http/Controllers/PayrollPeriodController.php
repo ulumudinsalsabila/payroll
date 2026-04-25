@@ -505,16 +505,12 @@ class PayrollPeriodController extends Controller
         return response()->view('pdf.payslip', ['payslip' => $payslip]);
     }
 
-    public function publishAndSend(Request $request, string $payrollPeriod)
+    public function publish(Request $request, string $payrollPeriod)
     {
         $period = PayrollPeriod::findOrFail($payrollPeriod);
 
         if ($period->status !== 'draft') {
             return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Periode ini sudah tidak dalam status draft.');
-        }
-
-        if (!app()->bound('dompdf.wrapper')) {
-            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'DomPDF belum terpasang/terdaftar.');
         }
 
         $payslips = Payslip::query()
@@ -525,11 +521,6 @@ class PayrollPeriodController extends Controller
         if ($payslips->isEmpty()) {
             return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Tidak ada payslip pada periode ini. Silakan simpan draft terlebih dahulu.');
         }
-
-        $sent = 0;
-        $skipped = 0;
-        $failed = 0;
-        $failedLabels = [];
 
         try {
             DB::transaction(function () use ($period, $payslips) {
@@ -614,18 +605,54 @@ class PayrollPeriodController extends Controller
                 }
 
                 $period->is_leave_distributed = true;
+                $period->status = 'published';
+                $period->published_at = Carbon::now();
                 $period->save();
+
+                Payslip::where('payroll_period_id', $period->id)->update(['status' => 'published']);
             });
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'PUBLISH_PERIOD',
+                'module' => 'PAYROLL_PERIOD',
+                'target_id' => $period->id,
+                'description' => 'Publish periode gaji (finalisasi)',
+                'old_values' => ['status' => 'draft'],
+                'new_values' => ['status' => 'published'],
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            return redirect()->route('payroll-periods.show', $period->id)->with('success', 'Periode berhasil dipublish (finalisasi).');
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Throwable $e) {
             return redirect()->route('payroll-periods.show', $period->id)->with('error', $e->getMessage());
+        }
+    }
+
+    public function sendEmails(Request $request, string $payrollPeriod)
+    {
+        $period = PayrollPeriod::findOrFail($payrollPeriod);
+
+        if ($period->status !== 'published') {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'Email hanya bisa dikirim jika periode sudah dipublish.');
+        }
+
+        if (!app()->bound('dompdf.wrapper')) {
+            return redirect()->route('payroll-periods.show', $period->id)->with('error', 'DomPDF belum terpasang/terdaftar.');
         }
 
         $payslips = Payslip::query()
             ->where('payroll_period_id', $period->id)
             ->with(['employee', 'payrollPeriod', 'details.component'])
             ->get();
+
+        $sent = 0;
+        $skipped = 0;
+        $failed = 0;
+        $failedLabels = [];
 
         foreach ($payslips as $payslip) {
             $email = trim((string) optional($payslip->employee)->email);
@@ -652,22 +679,14 @@ class PayrollPeriodController extends Controller
             }
         }
 
-        $before = $period->toArray();
-        $period->status = 'published';
-        $period->published_at = Carbon::now();
-        $period->save();
-
-        Payslip::where('payroll_period_id', $period->id)->update(['status' => 'published']);
-
         ActivityLog::create([
             'user_id' => auth()->id(),
-            'action' => 'PUBLISH_SEND_PDF',
+            'action' => 'SEND_PAYSLIP_EMAILS',
             'module' => 'PAYROLL_PERIOD',
             'target_id' => $period->id,
-            'description' => 'Publish periode dan kirim PDF slip gaji via email',
-            'old_values' => $before,
+            'description' => 'Mengirim PDF slip gaji via email',
+            'old_values' => null,
             'new_values' => [
-                'period' => $period->toArray(),
                 'sent' => $sent,
                 'skipped' => $skipped,
                 'failed' => $failed,
@@ -676,7 +695,7 @@ class PayrollPeriodController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        $msg = 'Periode berhasil dipublish. Email terkirim: ' . $sent . '. Di-skip (tanpa email): ' . $skipped . '. Gagal: ' . $failed . '.';
+        $msg = 'Email terkirim: ' . $sent . '. Di-skip (tanpa email): ' . $skipped . '. Gagal: ' . $failed . '.';
         if ($failed > 0 && count($failedLabels) > 0) {
             $some = array_slice($failedLabels, 0, 10);
             $msg .= ' Detail gagal: ' . implode(', ', $some) . (count($failedLabels) > 10 ? ', dll.' : '') . '.';
