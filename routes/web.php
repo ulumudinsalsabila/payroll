@@ -57,6 +57,8 @@ Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::resource('payslip-components', PayslipComponentController::class);
 
     Route::get('products/data', [\App\Http\Controllers\ProductController::class, 'data'])->name('products.data');
+    Route::post('products/import', [\App\Http\Controllers\ProductController::class, 'import'])->name('products.import');
+    Route::get('products/download-template', [\App\Http\Controllers\ProductController::class, 'downloadTemplate'])->name('products.download-template');
     Route::resource('products', \App\Http\Controllers\ProductController::class);
 
     Route::get('invoices/data', [\App\Http\Controllers\InvoiceController::class, 'data'])->name('invoices.data');

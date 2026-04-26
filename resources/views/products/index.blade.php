@@ -5,9 +5,14 @@
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-5">
         <h3 class="fw-bold mb-0">Data Barang</h3>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal" id="btnAddProduct">
-            <i class="bi bi-plus-lg me-2"></i>Tambah Barang
-        </button>
+        <div class="d-flex">
+            <button class="btn btn-light-primary me-3" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="bi bi-file-earmark-excel me-2"></i>Import Barang
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal" id="btnAddProduct">
+                <i class="bi bi-plus-lg me-2"></i>Tambah Barang
+            </button>
+        </div>
     </div>
 
     @if (session('success'))
@@ -125,6 +130,42 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-danger">Hapus</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Import -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title">Import Master Data Barang</h5>
+                        <button type="button" class="btn btn-sm btn-icon" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-5">
+                            <label class="form-label fw-bold">Download Template</label>
+                            <div>
+                                <a href="{{ route('products.download-template') }}" class="btn btn-sm btn-light-info">
+                                    <i class="bi bi-download me-2"></i>Download Template Excel
+                                </a>
+                            </div>
+                            <div class="text-muted fs-7 mt-2">Gunakan template ini untuk memastikan format data sesuai.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Pilih File Excel/CSV</label>
+                            <input type="file" name="file" class="form-control" accept=".xlsx, .xls, .csv" required>
+                            <div class="text-muted fs-7 mt-2">Maksimal ukuran file 2MB (.xlsx, .xls, .csv)</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Import Sekarang</button>
                     </div>
                 </form>
             </div>

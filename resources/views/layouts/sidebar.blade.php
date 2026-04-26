@@ -45,13 +45,6 @@
                                 <span class="menu-title">Data Invoice</span>
                             </a>
                         </div>
-                        <div class="menu-item">
-                            <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}"
-                                href="{{ route('products.index') }}">
-                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
-                                <span class="menu-title">Data Barang</span>
-                            </a>
-                        </div>
                     </div>
                 </div>
 
@@ -91,6 +84,13 @@
                                 href="{{ route('payslip-components.index') }}"><span class="menu-bullet"><span
                                         class="bullet bullet-dot"></span></span><span class="menu-title">Komponen
                                     Gaji</span></a>
+                        </div>
+                        <div class="menu-item">
+                            <a class="menu-link {{ request()->routeIs('products.*') ? 'active' : '' }}"
+                                href="{{ route('products.index') }}">
+                                <span class="menu-bullet"><span class="bullet bullet-dot"></span></span>
+                                <span class="menu-title">Data Barang</span>
+                            </a>
                         </div>
                     </div>
                 </div>

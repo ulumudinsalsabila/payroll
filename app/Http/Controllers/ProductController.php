@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Validation\Rule;
+use App\Imports\ProductsImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
@@ -25,7 +27,16 @@ class ProductController extends Controller
         
         return datatables()->eloquent($query)
             ->addColumn('actions', function($product) {
-                return '';
+                return '
+                    <div class="d-flex justify-content-center border-0">
+                        <button type="button" class="btn btn-sm btn-icon btn-light-warning me-2 btnEditProduct" data-id="'.$product->id.'" data-code="'.$product->code.'" data-name="'.$product->name.'" data-price="'.$product->price.'" data-description="'.$product->description.'" data-is_active="'.$product->is_active.'" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-icon btn-light-danger btnDeleteProduct" data-id="'.$product->id.'" data-name="'.$product->name.'" title="Hapus">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                ';
             })
             ->editColumn('price', function($product) {
                 return 'Rp ' . number_format($product->price, 0, ',', '.');
@@ -35,16 +46,11 @@ class ProductController extends Controller
                     ? '<span class="badge bg-light-success text-success">Aktif</span>'
                     : '<span class="badge bg-light-danger text-danger">Non-Aktif</span>';
             })
+            ->addColumn('is_active_raw', function($product) {
+                return $product->is_active ? 1 : 0;
+            })
             ->rawColumns(['actions', 'is_active'])
             ->toJson();
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -63,22 +69,6 @@ class ProductController extends Controller
         Product::create($data);
 
         return redirect()->route('products.index')->with('success', 'Barang berhasil ditambahkan.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
@@ -110,5 +100,41 @@ class ProductController extends Controller
         $product->delete();
 
         return redirect()->route('products.index')->with('success', 'Barang berhasil dihapus.');
+    }
+
+    /**
+     * Import products from Excel.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            Excel::import(new ProductsImport, $request->file('file'));
+            return redirect()->route('products.index')->with('success', 'Master data barang berhasil diimport.');
+        } catch (\Exception $e) {
+            return redirect()->route('products.index')->with('error', 'Gagal mengimport data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download import template.
+     */
+    public function downloadTemplate()
+    {
+        $header = ['kode', 'nama', 'harga', 'deskripsi'];
+        $data = [
+            ['BRG001', 'Barang Contoh 1', 50000, 'Deskripsi barang 1'],
+            ['BRG002', 'Barang Contoh 2', 75000, 'Deskripsi barang 2'],
+        ];
+
+        return Excel::download(new class($header, $data) implements \Maatwebsite\Excel\Concerns\FromArray {
+            private $header;
+            private $data;
+            public function __construct($header, $data) { $this->header = $header; $this->data = $data; }
+            public function array(): array { return array_merge([$this->header], $this->data); }
+        }, 'template_import_barang.xlsx');
     }
 }
