@@ -5,10 +5,10 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Invoice - {{ $invoice->invoice_number }}</title>
     @php
-        $logoPath = public_path('assets/logos/1 black.svg');
+        $logoPath = public_path('assets/logos/logo.png');
         $logoData = null;
         if (is_file($logoPath)) {
-            $logoData = 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($logoPath));
+            $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }
     @endphp
     <style>
@@ -74,7 +74,7 @@
 
         .items-table th, .items-table td {
             border: 1px solid #000;
-            padding: 8px 10px;
+            padding: 4px 5px;
         }
 
         .items-table th {
@@ -131,7 +131,6 @@
         .sign-table td {
             text-align: center;
             width: 50%;
-            padding-top: 20px;
         }
 
         .sign-table p {
@@ -159,9 +158,9 @@
                     <tr>
                         <td class="company-info">
                             @if($logoData)
-                                <img src="{{ $logoData }}" style="width: 140px; height: 40px; display: block;" alt="Logo" />
+                                <img src="{{ $logoData }}" style="width: 200px; display: block;" alt="Logo" />
                             @endif
-                            <p style="margin-top: 20px;">Office :</p>
+                            <p>Office :</p>
                             <p>Jl. Raya Cicalengka-Bandung, West Java 40395</p>
                             <p>Phone : 081214165911 / 08222330554</p>
                             <p>E-mail : hasnautama07@gmail.com</p>
@@ -171,7 +170,7 @@
             </td>
             
             <!-- Right Side: Invoice Info -->
-            <td style="width: 20%; padding-top: 20px;" class="invoice-info">
+            <td style="width: 20%;" class="invoice-info">
                 <p>Bandung, {{ $invoice->issue_date->format('d M Y') }}</p>
                 <p>Kepada Yth. Tuan / Toko :</p>
                 <p class="customer-name">{{ $invoice->customer_name }}</p>
@@ -201,9 +200,8 @@
             @endforeach
             <!-- Total Row moved here -->
             <tr>
-                <td colspan="2" style="border: none; border-top: 1px solid #000;"></td>
-                <td class="total-label" style="border-left: 1px solid #000; padding: 10px;">Total Rp.</td>
-                <td class="col-total" style="font-size: 12pt; font-weight: bold; padding: 10px;">{{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
+                <td colspan="3"  class="total-label" style="border-left: 1px solid #000; padding: 5px;">Total Rp.</td>
+                <td class="col-total" style="font-size: 12pt; font-weight: bold; padding: 5px;">{{ number_format($invoice->total_amount, 0, ',', '.') }}</td>
             </tr>
         </tbody>
     </table>

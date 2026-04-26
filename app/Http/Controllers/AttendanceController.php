@@ -140,4 +140,18 @@ class AttendanceController extends Controller
 
         return redirect()->route('attendances.index')->with('success', 'Data rekap absensi berhasil dihapus.');
     }
+
+    /**
+     * Remove all attendances by period_month.
+     */
+    public function destroyPeriod(Request $request)
+    {
+        $request->validate([
+            'period_month' => 'required|string|size:7'
+        ]);
+
+        Attendance::where('period_month', $request->period_month)->delete();
+
+        return redirect()->route('attendances.index')->with('success', "Seluruh data absensi untuk periode {$request->period_month} berhasil dihapus.");
+    }
 }

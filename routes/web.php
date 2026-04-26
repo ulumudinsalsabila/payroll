@@ -45,6 +45,7 @@ Route::middleware(['auth', 'role:HRD', 'activity.log'])->group(function () {
     Route::get('payroll-periods/data', [PayrollPeriodController::class, 'data'])->name('payroll-periods.data');
     Route::resource('payroll-periods', PayrollPeriodController::class);
 
+    Route::delete('attendances/destroy-period', [\App\Http\Controllers\AttendanceController::class, 'destroyPeriod'])->name('attendances.destroy-period');
     Route::get('attendances/data', [\App\Http\Controllers\AttendanceController::class, 'data'])->name('attendances.data');
     Route::post('attendances/import', [\App\Http\Controllers\AttendanceController::class, 'importExcel'])->name('attendances.import');
     Route::resource('attendances', \App\Http\Controllers\AttendanceController::class);

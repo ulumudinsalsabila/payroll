@@ -1,595 +1,238 @@
 <!doctype html>
 <html lang="id">
-
 <head>
     <meta charset="utf-8">
     <title>Payslip</title>
     <style>
         @page {
-            margin: 24px 24px 24px 24px;
+            margin: 20px 30px;
         }
-
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 11px;
-            color: #000000;
+            font-size: 12px;
+            color: #000;
         }
-
         table {
             border-collapse: collapse;
-        }
-
-        .w-100 {
             width: 100%;
         }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .text-left {
-            text-align: left;
-        }
-
-        .align-top {
+        td {
+            padding: 2px;
             vertical-align: top;
         }
-
-        .fw-bold {
-            font-weight: bold;
-        }
-
-        .company-name {
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        .employee-name {
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .employee-address {
-            font-size: 10px;
-            color: #111111;
-        }
-
-        .info-table td {
-            padding: 1px 0;
-        }
-
-        .info-table .label {
-            width: 140px;
-            font-weight: bold;
-        }
-
-        .info-table .colon {
-            width: 10px;
-        }
-
-        .hr-thick {
-            border-top: 2px solid #000000;
-            height: 1px;
-        }
-
-        .hr-thin {
-            border-top: 1px solid #000000;
-            height: 1px;
-        }
-
-        .section-center {
-            font-size: 12px;
-            font-weight: bold;
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        
+        .header-table td { padding: 0 5px; }
+        .header-title {
             text-align: center;
-        }
-
-        .detail-table td {
-            padding: 2px 0;
-        }
-
-        .detail-table .col-label {
-            width: 170px;
+            font-size: 15px;
             font-weight: bold;
-            vertical-align: top;
+            text-decoration: underline;
         }
-
-        .detail-table .col-item {
-            width: auto;
-            padding-left: 12px;
-        }
-
-        .detail-table .col-unit {
-            width: 90px;
-            text-align: center;
-        }
-
-        .detail-table .col-amt {
-            width: 140px;
-            text-align: right;
-        }
-
-        .amt-line {
-            border-top: 1px solid #777777;
-            padding-top: 3px;
-        }
-
-        .amt-line-strong {
-            border-top: 2px solid #777777;
-            padding-top: 4px;
-        }
-
-        .notes {
-            font-size: 10px;
-        }
+        
+        .details-table td { padding: 2px 5px; }
+        .details-table .col-label { width: 120px; }
+        .details-table .col-sep { width: 10px; }
+        .details-table .col-curr { width: 30px; }
+        .details-table .col-val { text-align: right; }
+        
+        .sub-item td:first-child { padding-left: 15px; }
+        
+        .line-top td { border-top: 1px solid #000; padding-top: 5px; }
+        .line-bottom td { border-bottom: 1px solid #000; padding-bottom: 5px; }
+        .line-thick-top td { border-top: 2px solid #000; padding-top: 5px; }
     </style>
 </head>
-
 <body>
     @php
         $payslip = $payslip ?? null;
-
-        $monthsId = [
-            1 => 'Januari',
-            2 => 'Februari',
-            3 => 'Maret',
-            4 => 'April',
-            5 => 'Mei',
-            6 => 'Juni',
-            7 => 'Juli',
-            8 => 'Agustus',
-            9 => 'September',
-            10 => 'Oktober',
-            11 => 'November',
-            12 => 'Desember',
-        ];
-
-        $periodMonth = (int) (optional(optional($payslip)->payrollPeriod)->month ?? date('m'));
-        $periodYear = (int) (optional(optional($payslip)->payrollPeriod)->year ?? date('Y'));
-
-        $startDate = \Carbon\Carbon::create($periodYear, $periodMonth, 1);
-        $endDate = (clone $startDate)->endOfMonth();
-
-        $paymentDate = optional($payslip)->payment_date ? \Carbon\Carbon::parse($payslip->payment_date) : $endDate;
-
-        $fmtRupiah = function ($v) {
-            $v = $v === null || $v === '' ? 0 : (int) round((float) $v);
-            return 'Rp' . number_format($v, 0, ',', '.');
-        };
-
-        $fmtNumber = function ($v) {
-            $v = $v === null || $v === '' ? 0 : (int) round((float) $v);
-            return number_format($v, 0, ',', '.');
-        };
-
-        $fmtPercent = function ($v) {
-            $v = $v === null || $v === '' ? 0 : (float) $v;
-            return number_format($v, 2, ',', '.') . '%';
-        };
-
         $employee = optional($payslip)->employee;
-
-        $hakCuti = (int) (optional($payslip)->leave_entitlement ?? (optional($employee)->leave_balance ?? 0));
-        $cutiBersama = (int) (optional($payslip)->leave_joint_days ?? 0);
-        $cutiPersonal = (int) (optional($payslip)->leave_personal_days ?? 0);
-        $sisaCuti = (int) (optional($payslip)->leave_remaining ?? max($hakCuti - $cutiBersama - $cutiPersonal, 0));
-
-        $details = $payslip
-            ? ($payslip->relationLoaded('details')
-                ? $payslip->details
-                : $payslip->details()->get())
-            : collect();
+        $period = optional($payslip)->payrollPeriod;
+        
+        $monthsId = [
+            1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April',
+            5 => 'May', 6 => 'June', 7 => 'July', 8 => 'August',
+            9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December',
+        ];
+        
+        $periodMonth = (int) (optional($period)->month ?? date('n'));
+        $periodYear = (int) (optional($period)->year ?? date('Y'));
+        $periodStr = ($monthsId[$periodMonth] ?? '') . ' ' . $periodYear;
+        
+        $defaultWorkDays = $period->default_work_days ?? 25;
+        $workDays = $payslip->work_days ?? 0;
+        
+        $attendance = \App\Models\Attendance::where('employee_id', $payslip->employee_id)
+            ->where('period_month', $periodYear . '-' . str_pad($periodMonth, 2, '0', STR_PAD_LEFT))
+            ->first();
+        $jamLembur = $attendance ? $attendance->overtime_hours : '0';
+        
+        $fmtRupiah = function ($v) {
+            return number_format((int)$v, 0, ',', '.');
+        };
+        
+        $details = $payslip ? $payslip->details : collect();
         if (method_exists($details, 'load')) {
             $details->load('component');
         }
-
+        
         $earningDetails = $details->filter(fn($d) => optional($d->component)->type === 'earning');
         $deductionDetails = $details->filter(fn($d) => optional($d->component)->type === 'deduction');
         $taxDetails = $details->filter(fn($d) => optional($d->component)->type === 'tax');
-
+        
         $basicDetail = $earningDetails->first(fn($d) => (string) optional($d->component)->name === 'Gaji Pokok');
         $basicAmount = $basicDetail ? (int) $basicDetail->amount : (int) (optional($payslip)->basic_salary ?? 0);
-
+        
         $otherEarningLineItems = $earningDetails
-            ->filter(fn($d) => (string) optional($d->component)->name !== 'Gaji Pokok')
-            ->filter(fn($d) => (int) (optional($d)->amount ?? 0) !== 0)
-            ->sortBy(function ($d) {
-                return strtolower((string) (optional($d->component)->name ?? ''));
-            });
-
-        $deductionLineItems = $deductionDetails
-            ->filter(fn($d) => (int) (optional($d)->amount ?? 0) !== 0)
-            ->sortBy(function ($d) {
-                return strtolower((string) (optional($d->component)->name ?? ''));
-            });
-
-        $taxLineItems = $taxDetails->filter(fn($d) => (int) (optional($d)->amount ?? 0) !== 0)->sortBy(function ($d) {
-            return strtolower((string) (optional($d->component)->name ?? ''));
-        });
-
-        $totalBruto = (int) (optional($payslip)->total_earnings ?? $earningDetails->sum('amount'));
-        $totalPotongan = (int) (optional($payslip)->total_deductions ?? $deductionDetails->sum('amount'));
-        $totalPajak = (int) (optional($payslip)->tax_amount ?? $taxDetails->sum('amount'));
-        $kenaPajak = max($totalBruto - $totalPotongan, 0);
-        $netto = (int) (optional($payslip)->net_salary ?? max($kenaPajak - $totalPajak, 0));
-
-        $terPercent = null;
-        $category = strtoupper((string) (optional($employee)->ter_category ?? ''));
-        if (in_array($category, ['A', 'B', 'C'], true)) {
-            $rate = \App\Models\TerRate::query()
-                ->where('category', $category)
-                ->where('min_bruto', '<=', $totalBruto)
-                ->where(function ($q) use ($totalBruto) {
-                    $q->whereNull('max_bruto')->orWhere('max_bruto', '>=', $totalBruto);
-                })
-                ->orderByDesc('min_bruto')
-                ->first();
-
-            if ($rate) {
-                $terPercent = (float) $rate->percentage;
-            }
+            ->filter(fn($d) => (string) optional($d->component)->name !== 'Gaji Pokok');
+            
+        $deductionLineItems = $deductionDetails;
+            
+        $taxLineItems = $taxDetails;
+            
+        $potonganAbsen = 0;
+        if ($workDays < $defaultWorkDays && $workDays > 0) {
+            $potonganPerHari = $basicAmount > 0 ? round($basicAmount / $defaultWorkDays) : 0;
+            $potonganAbsen = ($defaultWorkDays - $workDays) * $potonganPerHari;
         }
-
-        $periodText = $startDate->format('d/m/Y') . ' s.d. ' . $endDate->format('d/m/Y');
-        $paymentText =
-            $paymentDate->format('d') .
-            ' ' .
-            ($monthsId[(int) $paymentDate->format('n')] ?? $paymentDate->format('F')) .
-            ' ' .
-            $paymentDate->format('Y');
-
-        $logoPath = public_path('assets/logos/1 black.svg');
+        
+        $totalPendapatan = $basicAmount + $otherEarningLineItems->sum('amount');
+        $totalPotongan = $deductionLineItems->sum('amount') + $taxLineItems->sum('amount') + $potonganAbsen;
+        $pendapatanBersih = max($totalPendapatan - $totalPotongan, 0);
+        
+        $logoPath = public_path('assets/logos/logo.png');
         $logoData = null;
         if (is_file($logoPath)) {
-            $logoData = 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($logoPath));
+            $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
         }
-
-        $monthKey = str_pad((string) $periodMonth, 2, '0', STR_PAD_LEFT);
-        $ytdTotalBruto = 0;
-        $ytdTotalPotongan = 0;
-        $ytdTotalPajak = 0;
-        $ytdNetto = 0;
-        if ($payslip) {
-            $ytdPayslips = \App\Models\Payslip::query()
-                ->where('employee_id', $payslip->employee_id)
-                ->whereHas('payrollPeriod', function ($q) use ($periodYear, $monthKey) {
-                    $q->where('year', (string) $periodYear)->where('month', '<=', $monthKey);
-                })
-                ->get(['total_earnings', 'total_deductions', 'tax_amount', 'net_salary']);
-
-            $ytdTotalBruto = (int) $ytdPayslips->sum('total_earnings');
-            $ytdTotalPotongan = (int) $ytdPayslips->sum('total_deductions');
-            $ytdTotalPajak = (int) $ytdPayslips->sum('tax_amount');
-            $ytdNetto = (int) $ytdPayslips->sum('net_salary');
-        }
-
-        $ytdKenaPajak = max($ytdTotalBruto - $ytdTotalPotongan, 0);
-        $ringkasanRange =
-            ($monthsId[$periodMonth] ?? $startDate->format('F')) .
-            ' ' .
-            $periodYear .
-            ' s.d. ' .
-            ($monthsId[$periodMonth] ?? $startDate->format('F')) .
-            ' Tahun ' .
-            $periodYear;
     @endphp
 
-    <table class="w-100" width="100%">
+    <table style="width: 100%;">
         <tr>
-            <td class="text-center fw-bold">RAHASIA</td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 10px;">
-        <tr>
-            <td class="align-top text-center" style="width: 140px;">
+            <td style="width: 33%; vertical-align: top;">
                 @if ($logoData)
-                    <img src="{{ $logoData }}" alt="Logo" style="width: 110px;" />
+                    <img src="{{ $logoData }}" alt="Logo" style="width: 200px;" />
+                @else
+                    <h3 style="margin: 0 0 5px 0; font-style: italic;">CV .HASNA UTAMA</h3>
                 @endif
             </td>
-            <td class="align-top">
-                <div class="company-name">PT Altimeda Cipta Visitama</div>
-                <table class="w-100 info-table" width="100%" style="margin-top: 4px;">
-                    <tr>
-                        <td class="label">Nomor PT</td>
-                        <td class="colon">:</td>
-                        <td>35 159 057 646</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Periode</td>
-                        <td class="colon">:</td>
-                        <td>{{ $periodText }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Tanggal Pembayaran</td>
-                        <td class="colon">:</td>
-                        <td>{{ $paymentText }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Posisi</td>
-                        <td class="colon">:</td>
-                        <td>{{ (string) (optional($employee)->position ?? '-') }}</td>
-                    </tr>
-                    <tr>
-                        <td class="label">Unit Kerja</td>
-                        <td class="colon">:</td>
-                        <td>{{ (string) (optional($employee)->department ?? '-') }}</td>
-                    </tr>
+            <td style="width: 34%; vertical-align: top; text-align: center;">
+                <div class="header-title" style="margin-top: 22px;">SLIP GAJI KARYAWAN</div>
+            </td>
+            <td style="width: 33%; vertical-align: top;">
+            </td>
+        </tr>
+    </table>
+    <table style="width: 100%; margin-top: 10px;">
+        <tr>
+            <td style="width: 33%; vertical-align: top;">
+                <table class="header-table" style="font-size: 11px;">
+                    <tr><td style="width: 70px; padding: 2px 0;">Departemet</td><td style="width: 5px; padding: 2px 0;">:</td><td style="padding: 2px 0;">{{ strtoupper($employee->department ?? '-') }}</td></tr>
+                    <tr><td style="padding: 2px 0;">NIK / Nama</td><td style="padding: 2px 0;">:</td><td style="padding: 2px 0;">{{ str_pad($employee->employee_code ?? '', 4, '0', STR_PAD_LEFT) }} / {{ strtoupper($employee->name ?? '-') }}</td></tr>
+                    <tr><td style="padding: 2px 0;">Bulan</td><td style="padding: 2px 0;">:</td><td style="padding: 2px 0;">{{ $periodStr }}</td></tr>
+                </table>
+            </td>
+            <td style="width: 33%; vertical-align: top;">
+                <table class="header-table" style="font-size: 11px; margin-left: auto;">
+                    <tr><td style="padding: 2px 0;">Jml Kerja Efektif</td><td style="width: 5px; padding: 2px 0;">:</td><td class="text-right" style="width: 30px; padding: 2px 0;">{{ $defaultWorkDays }}</td><td style="padding: 2px 0;">Hari</td></tr>
+                    <tr><td style="padding: 2px 0;">Jml Hari Kerja</td><td style="padding: 2px 0;">:</td><td class="text-right" style="padding: 2px 0;">{{ number_format($workDays, 1) }}</td><td style="padding: 2px 0;">Hari</td></tr>
+                    <tr><td style="padding: 2px 0;">Jml Jam Lembur</td><td style="padding: 2px 0;">:</td><td class="text-right" style="padding: 2px 0;">{{ $jamLembur }}</td><td style="padding: 2px 0;">Jam</td></tr>
                 </table>
             </td>
         </tr>
     </table>
-
-    <table class="w-100" width="100%" style="margin-top: 14px;">
+    
+    
+    <div style="height: 15px;"></div>
+    
+    <table>
         <tr>
-            <td class="align-top">
-                <div class="employee-name">{{ (string) (optional($employee)->name ?? '-') }}</div>
-                <div class="employee-address" style="margin-top: 2px;">
-                    {!! nl2br(e((string) (optional($employee)->address ?? '-'))) !!}
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 10px;">
-        <tr>
-            <td class="hr-thick"></td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 12px;">
-        <tr>
-            <td class="section-center">Detil Pembayaran</td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 8px;">
-        <tr>
-            <td class="align-top">
-                <table class="w-100 detail-table" width="100%">
+            <td style="width: 50%; padding-right: 15px;">
+                <table class="details-table">
                     <tr>
-                        <td class="col-label"></td>
-                        <td class="col-item"></td>
-                        <td class="col-unit fw-bold">Hari/Unit</td>
-                        <td class="col-amt fw-bold">Jumlah</td>
+                        <td class="col-label">Gaji Pokok</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($basicAmount) }}</td>
                     </tr>
                     <tr>
-                        <td class="col-label">Pendapatan</td>
-                        <td class="col-item">Gaji Pokok</td>
-                        <td class="col-unit">{{ (int) (optional($payslip)->work_days ?? 0) }}</td>
-                        <td class="col-amt">{{ $fmtRupiah($basicAmount) }}</td>
+                        <td class="col-label">Tunjangan</td><td class="col-sep"></td><td class="col-curr"></td><td class="col-val"></td>
                     </tr>
-                    @foreach ($otherEarningLineItems as $detail)
-                        <tr>
-                            <td class="col-label"></td>
-                            <td class="col-item">{{ (string) optional($detail->component)->name }}</td>
-                            <td class="col-unit"></td>
-                            <td class="col-amt">{{ $fmtRupiah((int) (optional($detail)->amount ?? 0)) }}</td>
-                        </tr>
-                    @endforeach
-                    <tr>
-                        <td class="col-label"></td>
-                        <td class="col-item fw-bold">Total Penghasilan Bruto</td>
-                        <td class="col-unit"></td>
-                        <td class="col-amt fw-bold amt-line">{{ $fmtRupiah($totalBruto) }}</td>
+                    @foreach($otherEarningLineItems as $item)
+                    @if(strpos(strtolower(optional($item->component)->name), 'lembur') === false)
+                    <tr class="sub-item">
+                        <td class="col-label">{{ optional($item->component)->name }}</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($item->amount) }}</td>
                     </tr>
-
-                    <tr>
-                        <td colspan="4" style="height: 10px;"></td>
-                    </tr>
-
-                    @foreach ($deductionLineItems as $detail)
-                        <tr>
-                            <td class="col-label">{{ $loop->first ? 'Potongan' : '' }}</td>
-                            <td class="col-item">{{ (string) optional($detail->component)->name }}</td>
-                            <td class="col-unit">
-                                {{ optional($detail->component)->percentage !== null ? $fmtPercent(optional($detail->component)->percentage) : '' }}
-                            </td>
-                            <td class="col-amt">{{ $fmtRupiah((int) $detail->amount) }}</td>
-                        </tr>
-                    @endforeach
-
-                    @if ($deductionLineItems->count() === 0)
-                        <tr>
-                            <td class="col-label">Potongan</td>
-                            <td class="col-item">&nbsp;</td>
-                            <td class="col-unit">&nbsp;</td>
-                            <td class="col-amt">&nbsp;</td>
-                        </tr>
                     @endif
-
-                    <tr>
-                        <td class="col-label"></td>
-                        <td class="col-item fw-bold">Total Potongan (Sebelum Pajak)</td>
-                        <td class="col-unit"></td>
-                        <td class="col-amt fw-bold amt-line">{{ $fmtRupiah($totalPotongan) }}</td>
-                    </tr>
-
-                    <tr>
-                        <td colspan="4" style="height: 10px;"></td>
-                    </tr>
-
-                    <tr>
-                        <td class="col-label fw-bold">Total Penghasilan Kena Pajak</td>
-                        <td class="col-item"></td>
-                        <td class="col-unit"></td>
-                        <td class="col-amt fw-bold">{{ $fmtRupiah($kenaPajak) }}</td>
-                    </tr>
-
-                    @foreach ($taxLineItems as $detail)
-                        @php
-                            $taxName = (string) (optional($detail->component)->name ?? 'Pajak');
-                            $pct = optional($detail->component)->percentage;
-                            $pctText = '';
-                            if ($taxName === 'PPh Pasal 21' && $terPercent !== null) {
-                                $pctText = number_format($terPercent, 2, ',', '.') . '%';
-                            } elseif ($pct !== null) {
-                                $pctText = $fmtPercent($pct);
-                            }
-                        @endphp
-                        <tr>
-                            <td class="col-label">{{ $loop->first ? 'Pajak' : '' }}</td>
-                            <td class="col-item">{{ $taxName }}</td>
-                            <td class="col-unit">{{ $pctText }}</td>
-                            <td class="col-amt">{{ $fmtRupiah((int) (optional($detail)->amount ?? 0)) }}</td>
-                        </tr>
                     @endforeach
-
-                    @if ($taxLineItems->count() === 0)
-                        <tr>
-                            <td class="col-label">Pajak</td>
-                            <td class="col-item">&nbsp;</td>
-                            <td class="col-unit">&nbsp;</td>
-                            <td class="col-amt">&nbsp;</td>
-                        </tr>
+                    
+                    @php
+                        $lemburItem = $otherEarningLineItems->first(fn($d) => strpos(strtolower(optional($d->component)->name), 'lembur') !== false);
+                    @endphp
+                    @if($lemburItem)
+                    <tr>
+                        <td class="col-label">{{ optional($lemburItem->component)->name }}</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($lemburItem->amount) }}</td>
+                    </tr>
                     @endif
-
+                    
+                    <tr><td colspan="4" style="height: 5px;"></td></tr>
+                    <tr class="line-top">
+                        <td class="col-label">Pendapatan Bruto</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($totalPendapatan) }}</td>
+                    </tr>
+                </table>
+            </td>
+            
+            <td style="width: 50%; padding-left: 15px;">
+                <table class="details-table">
                     <tr>
-                        <td class="col-label"></td>
-                        <td class="col-item fw-bold">Total Pajak</td>
-                        <td class="col-unit"></td>
-                        <td class="col-amt">{{ $fmtRupiah($totalPajak) }}</td>
+                        <td class="col-label">Potongan</td><td class="col-sep"></td><td class="col-curr"></td><td class="col-val"></td>
+                    </tr>
+                    @if($potonganAbsen > 0)
+                    <tr class="sub-item">
+                        <td class="col-label">Tidak Masuk / Absen</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($potonganAbsen) }}</td>
+                    </tr>
+                    @endif
+                    @foreach($deductionLineItems as $item)
+                    <tr class="sub-item">
+                        <td class="col-label">{{ optional($item->component)->name }}</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($item->amount) }}</td>
+                    </tr>
+                    @endforeach
+                    @foreach($taxLineItems as $item)
+                    <tr class="sub-item">
+                        <td class="col-label">{{ optional($item->component)->name }}</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($item->amount) }}</td>
+                    </tr>
+                    @endforeach
+                    
+                    <tr><td colspan="4" style="height: 5px;"></td></tr>
+                    <tr class="line-top line-bottom">
+                        <td class="col-label">Total Potongan</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">{{ $fmtRupiah($totalPotongan) }}</td>
+                    </tr>
+                    
+                    <tr><td colspan="4" style="height: 15px;"></td></tr>
+                    
+                    <tr>
+                        <td class="col-label">Pendapatan</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val fw-bold">{{ $fmtRupiah($pendapatanBersih) }}</td>
                     </tr>
                     <tr>
-                        <td class="col-label fw-bold">Total Penghasilan Bersih Setelah Pajak</td>
-                        <td class="col-item"></td>
-                        <td class="col-unit"></td>
-                        <td class="col-amt fw-bold amt-line-strong">{{ $fmtRupiah($netto) }}</td>
+                        <td class="col-label">Rounded</td><td class="col-sep">:</td><td class="col-curr">Rp.</td><td class="col-val">0</td>
+                    </tr>
+                    
+                    <tr><td colspan="4" style="height: 5px;"></td></tr>
+                    <tr class="line-thick-top">
+                        <td class="col-label fw-bold">Pendapatan Bersih</td><td class="col-sep">:</td><td class="col-curr fw-bold">Rp.</td><td class="col-val fw-bold">{{ $fmtRupiah($pendapatanBersih) }}</td>
                     </tr>
                 </table>
             </td>
         </tr>
     </table>
-
-    <table class="w-100" width="100%" style="margin-top: 12px;">
+    
+    <div style="height: 20px;"></div>
+    
+    <table class="details-table" style="background-color: #e4e4e4; padding: 5px;">
         <tr>
-            <td class="hr-thick"></td>
+            <td style="width: 80px;" class="fw-bold">Keterangan</td>
+            <td style="width: 10px;">:</td>
+            <td></td>
         </tr>
     </table>
-
-    <table class="w-100" width="100%" style="margin-top: 12px;">
-        <tr>
-            <td class="section-center">Informasi Rekening</td>
-        </tr>
-    </table>
-
-    <table class="w-100 info-table" width="100%" style="margin-top: 10px;">
-        <tr>
-            <td class="label">Bank</td>
-            <td class="colon">:</td>
-            <td>{{ (string) (optional($employee)->bank_name ?? '-') }}</td>
-        </tr>
-        <tr>
-            <td class="label">Nama Rekening</td>
-            <td class="colon">:</td>
-            <td>{{ (string) (optional($employee)->bank_account_name ?? '-') }}</td>
-        </tr>
-        <tr>
-            <td class="label">Nomor Rekening</td>
-            <td class="colon">:</td>
-            <td>{{ (string) (optional($employee)->bank_account_number ?? '-') }}</td>
-        </tr>
-        <tr>
-            <td class="label">Jumlah</td>
-            <td class="colon"></td>
-            <td class="fw-bold">{{ $fmtRupiah($netto) }}</td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 12px;">
-        <tr>
-            <td class="hr-thick"></td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 12px;">
-        <tr>
-            <td class="align-top" style="width: 72%; padding-right: 10px;">
-                <table class="w-100" width="100%">
-                    <tr>
-                        <td class="fw-bold" style="font-size: 12px;">Ringkasan Pembayaran Gaji</td>
-                        <td class="text-right fw-bold" style="font-size: 10px;">{{ $ringkasanRange }}</td>
-                    </tr>
-                </table>
-
-                <table class="w-100" width="100%" style="margin-top: 10px;">
-                    <tr>
-                        <td style="width: 260px;">Total Pedapatan Kotor</td>
-                        <td class="text-right" style="width: 140px;">{{ $fmtRupiah($totalBruto) }}</td>
-                        <td class="text-right" style="width: 140px;">{{ $fmtRupiah($ytdTotalBruto) }}</td>
-                    </tr>
-                    <tr>
-                        <td>Total Potongan (Sebelum Pajak)</td>
-                        <td class="text-right">{{ $fmtRupiah($totalPotongan) }}</td>
-                        <td class="text-right">{{ $fmtRupiah($ytdTotalPotongan) }}</td>
-                    </tr>
-                    <tr>
-                        <td>Total Penghasilan Kena Pajak</td>
-                        <td class="text-right">{{ $fmtRupiah($kenaPajak) }}</td>
-                        <td class="text-right">{{ $fmtRupiah($ytdKenaPajak) }}</td>
-                    </tr>
-                    <tr>
-                        <td>Total Pajak</td>
-                        <td class="text-right">{{ $fmtRupiah($totalPajak) }}</td>
-                        <td class="text-right">{{ $fmtRupiah($ytdTotalPajak) }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-bold">Pembayaran Bersih</td>
-                        <td class="text-right fw-bold">{{ $fmtRupiah($netto) }}</td>
-                        <td class="text-right fw-bold">{{ $fmtRupiah($ytdNetto) }}</td>
-                    </tr>
-                </table>
-            </td>
-
-            <td class="align-top" style="width: 28%; border-left: 2px solid #000000; padding-left: 10px;">
-                <table class="w-100" width="100%">
-                    <tr>
-                        <td class="text-center fw-bold" style="width: 60px;">Cuti</td>
-                        <td class="text-center fw-bold">Saldo Cuti</td>
-                    </tr>
-                </table>
-
-                <table class="w-100" width="100%" style="margin-top: 10px;">
-                    <tr>
-                        <td>Hak Cuti</td>
-                        <td class="text-right">{{ $hakCuti }}</td>
-                    </tr>
-                    <tr>
-                        <td>Cuti Bersama</td>
-                        <td class="text-right">{{ $cutiBersama }}</td>
-                    </tr>
-                    <tr>
-                        <td>Cuti Personal</td>
-                        <td class="text-right">{{ $cutiPersonal }}</td>
-                    </tr>
-                    <tr>
-                        <td class="fw-bold">Sisa Cuti</td>
-                        <td class="text-right fw-bold amt-line">{{ $sisaCuti }}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 12px;">
-        <tr>
-            <td class="hr-thick"></td>
-        </tr>
-    </table>
-
-    <table class="w-100" width="100%" style="margin-top: 10px;">
-        <tr>
-            <td class="notes">
-                <div class="fw-bold" style="margin-bottom: 4px;">Catatan</div>
-                <div>- Hak cuti akan di-reset setiap tahun</div>
-                <div>- Penggunaan cuti tidak dapat dilakukan sekaligus, melainkan harus diambil secara bertahap</div>
-            </td>
-        </tr>
-    </table>
-
 </body>
-
 </html>

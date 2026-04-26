@@ -75,13 +75,13 @@ class EmployeeController extends Controller
     }
     
     /**
-     * Generate unique employee code with format ALT-XXXXXX
+     * Generate unique employee code with format HASNA-XXXXXX
      */
     private function generateEmployeeCode(): string
     {
         do {
             $num = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-            $code = 'ALT-' . $num;
+            $code = 'HASNA-' . $num;
         } while (Employee::where('employee_code', $code)->exists());
         return $code;
     }

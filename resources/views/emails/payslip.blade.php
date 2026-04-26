@@ -20,10 +20,10 @@
 
     $periodLabel = ($monthsId[$periodMonth] ?? $periodMonth) . ' ' . $periodYear;
 
-    $logoPath = public_path('assets/logos/1 black.svg');
+    $logoPath = public_path('assets/logos/logo.png');
     $logoData = null;
     if (is_file($logoPath)) {
-        $logoData = 'data:image/svg+xml;base64,' . base64_encode(file_get_contents($logoPath));
+        $logoData = 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath));
     }
 @endphp
 

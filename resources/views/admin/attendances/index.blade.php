@@ -9,6 +9,9 @@
         <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importModal">
             <i class="bi bi-file-earmark-arrow-up me-2"></i>Import Statistik Fingerprint
         </button>
+        <button class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deletePeriodModal">
+            <i class="bi bi-trash me-2"></i>Hapus Periode
+        </button>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#attendanceModal" id="btnAddAttendance">
             <i class="bi bi-plus-lg me-2"></i>Tambah Rekap
         </button>
@@ -163,6 +166,38 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-danger">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Delete Period -->
+<div class="modal fade" id="deletePeriodModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="{{ route('attendances.destroy-period') }}" method="POST">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header">
+                    <h5 class="modal-title">Hapus Periode Absensi</h5>
+                    <button type="button" class="btn btn-sm btn-icon btn-light" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger py-3 d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle fs-2 me-3 text-danger"></i>
+                        <span><strong>Perhatian:</strong> Seluruh data absensi pada periode yang dipilih akan dihapus permanen!</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Pilih Periode Bulan</label>
+                        <input type="month" name="period_month" class="form-control" required value="{{ date('Y-m') }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Hapus Permanen</button>
                 </div>
             </form>
         </div>
