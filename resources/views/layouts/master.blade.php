@@ -12,7 +12,6 @@
     @endif
 
     <base href="{{ asset('') }}">
-    <link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico') }}" />
 
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
@@ -90,14 +89,6 @@
 
                     <!--begin::Header logo & title-->
                     <div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
-                        <a href="{{ auth()->check() ? route('payroll-periods.index') : route('login') }}"
-                            class="d-flex align-items-center">
-                            <img alt="Logo" src="{{ asset('assets/media/logos/default-small.svg') }}"
-                                class="h-30px" />
-                            <div class="menu-item px-3 my-0">
-                                PT. Hasna Utama
-                            </div>
-                        </a>
                     </div>
                     <!--end::Header logo-->
 
@@ -160,7 +151,7 @@
                     <!--begin::Sidebar logo-->
                     <div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
                         <a href="{{ url('/') }}" class="d-flex align-items-center">
-                            <i class="bi bi-layers text-primary fs-1"></i>
+                            <img alt="Logo" src="{{ asset('assets/logos/logo-rounded.png') }}" class="h-30px" />
                             <span class="ms-3 fw-semibold text-gray-800 fs-6 sidebar-title">PT. Hasna Utama</span>
                         </a>
                     </div>

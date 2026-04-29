@@ -12,7 +12,6 @@
     <meta property="og:locale" content="id_ID" />
     <meta property="og:type" content="article" />
     <meta property="og:title" content="PT. Hasna Utama" />
-    <link rel="shortcut icon" href="{{ asset('assets/media/logos/favicon.ico') }}" />
 
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
