@@ -93,10 +93,6 @@
         $taxLineItems = $taxDetails;
             
         $potonganAbsen = 0;
-        if ($workDays < $defaultWorkDays && $workDays > 0) {
-            $potonganPerHari = $basicAmount > 0 ? round($basicAmount / $defaultWorkDays) : 0;
-            $potonganAbsen = ($defaultWorkDays - $workDays) * $potonganPerHari;
-        }
         
         $totalPendapatan = $basicAmount + $otherEarningLineItems->sum('amount');
         $totalPotongan = $deductionLineItems->sum('amount') + $taxLineItems->sum('amount') + $potonganAbsen;

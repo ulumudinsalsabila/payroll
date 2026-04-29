@@ -73,7 +73,7 @@
                         <th>Posisi</th>
                         <th>Departemen</th>
                         <th>Sisa Cuti</th>
-                        <th class="text-end">Gaji Pokok</th>
+                        <th class="text-end">Gaji Harian</th>
                         <th class="text-end">Aksi</th>
                     </tr>
                 </thead>
@@ -158,7 +158,7 @@
                                     min="0" value="0">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Gaji Pokok</label>
+                                <label class="form-label">Gaji Harian</label>
                                 <input type="number" name="basic_salary" id="basic_salary" class="form-control"
                                     min="0" placeholder="0">
                             </div>

@@ -160,7 +160,7 @@
             @csrf
             <div class="card-body">
                 @foreach ($employees as $employee)
-                    <div class="card mb-3 employee-card" data-employee-id="{{ $employee->id }}">
+                    <div class="card mb-3 employee-card" data-employee-id="{{ $employee->id }}" data-daily-salary="{{ $employee->basic_salary ?? 0 }}">
                         <div class="card-header d-flex justify-content-between align-items-center py-2" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#employeeCollapse{{ $employee->id }}" aria-expanded="false">
                             <div class="text-start">
                                 <h4 class="text-primary fw-bold text-14 mb-0">{{ $employee->name }}</h4>
@@ -479,6 +479,19 @@
                 let totalDeductions = 0;
                 let totalTax = 0;
 
+                // Update Gaji Pokok based on work days
+                const card = document.querySelector('.employee-card[data-employee-id="' + employeeId + '"]');
+                const dailySalary = parseIntSafe(card ? card.getAttribute('data-daily-salary') : 0);
+                const workDaysEl = document.querySelector('[name="work_days[' + employeeId + ']"]');
+                const workDays = workDaysEl ? parseIntSafe(workDaysEl.value) : 0;
+
+                if (BASIC_SALARY_COMPONENT_ID) {
+                    const basicSalaryEl = document.querySelector('.input-earning[data-employee-id="' + employeeId + '"][data-component-id="' + BASIC_SALARY_COMPONENT_ID + '"]');
+                    if (basicSalaryEl) {
+                        basicSalaryEl.value = dailySalary * workDays;
+                    }
+                }
+
                 document.querySelectorAll('.input-earning[data-employee-id="' + employeeId + '"]').forEach(function(el) {
                     totalEarnings += parseIntSafe(el.value);
                 });
@@ -493,36 +506,8 @@
                     }
                 });
 
-                // Get work days and default work days
-                const workDaysEl = document.querySelector('[name="work_days[' + employeeId + ']"]');
-                const workDays = workDaysEl ? parseIntSafe(workDaysEl.value) : 0;
-                const defaultWorkDays = {{ $payrollPeriod->default_work_days ?? 25 }};
-                
                 // Calculate and update netto
                 let netto = totalEarnings - totalDeductions - totalTax;
-                
-                // Apply potongan jika kurang dari default hari kerja
-                if (workDays < defaultWorkDays && workDays > 0) {
-                    // Get basic salary untuk perhitungan potongan
-                    const basicSalaryEl = document.querySelector('.input-earning[data-employee-id="' + employeeId + '"][readonly]');
-                    let basicSalary = 0;
-                    if (basicSalaryEl) {
-                        basicSalary = parseIntSafe(basicSalaryEl.value);
-                    } else {
-                        // Fallback ke earning pertama jika tidak ada readonly
-                        const firstEarningEl = document.querySelector('.input-earning[data-employee-id="' + employeeId + '"]');
-                        if (firstEarningEl) {
-                            basicSalary = parseIntSafe(firstEarningEl.value);
-                        }
-                    }
-                    
-                    // Hitung potongan per hari tidak masuk
-                    const potonganPerHari = basicSalary > 0 ? Math.round(basicSalary / defaultWorkDays) : 0;
-                    const totalPotongan = (defaultWorkDays - workDays) * potonganPerHari;
-                    
-                    // Kurangi netto dengan potongan
-                    netto = netto - totalPotongan;
-                }
                 
                 const nettoEl = document.querySelector('[data-field="netto"][data-employee-id="' + employeeId + '"]');
                 if (nettoEl) {

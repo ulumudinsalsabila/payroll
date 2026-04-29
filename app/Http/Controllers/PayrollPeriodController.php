@@ -160,7 +160,8 @@ class PayrollPeriodController extends Controller
         // Auto-fill basic salary for employees without existing payslips
         foreach ($employees as $employee) {
             if (!isset($draftAmounts[$employee->id][$basicSalaryComponentId]) && $basicSalaryComponentId && $employee->basic_salary > 0) {
-                $draftAmounts[$employee->id][$basicSalaryComponentId] = $employee->basic_salary;
+                $workDays = $draftWorkDays[$employee->id] ?? 0;
+                $draftAmounts[$employee->id][$basicSalaryComponentId] = $employee->basic_salary * $workDays;
             }
         }
 
@@ -343,8 +344,11 @@ class PayrollPeriodController extends Controller
                             $basicSalary = $amount > 0 ? $amount : $employeeBasicSalary;
                             // Update component values with employee's basic salary if Excel value is empty
                             if ($amount === 0 && $employeeBasicSalary > 0) {
-                                $componentValues[$componentId] = $employeeBasicSalary;
-                                $totalEarnings += $employeeBasicSalary;
+                                $calculatedBasic = $employeeBasicSalary * $workDays;
+                                $componentValues[$componentId] = $calculatedBasic;
+                                $totalEarnings += $calculatedBasic;
+                                // Also update basicSalary variable for Payslip model
+                                $basicSalary = $calculatedBasic;
                             }
                         }
                     }
@@ -446,7 +450,7 @@ class PayrollPeriodController extends Controller
             ], [
                 'payment_date' => $paymentDate,
                 'status' => 'draft',
-                'basic_salary' => $employee->basic_salary ?? 0,
+                'basic_salary' => ($employee->basic_salary ?? 0) * $attendance->present_days,
                 'total_earnings' => 0,
                 'total_deductions' => 0,
                 'tax_amount' => 0,
@@ -459,12 +463,18 @@ class PayrollPeriodController extends Controller
 
             // Auto-fill Gaji Pokok if not exists
             if ($basicSalaryComponentId && $employee->basic_salary > 0) {
+                $calculatedBasic = $employee->basic_salary * $attendance->present_days;
                 PayslipDetail::updateOrCreate([
                     'payslip_id' => $payslip->id,
                     'payslip_component_id' => $basicSalaryComponentId,
                 ], [
-                    'amount' => $employee->basic_salary
+                    'amount' => $calculatedBasic
                 ]);
+
+                // Also update the main payslip basic_salary and total_earnings if it was just created
+                $payslip->basic_salary = $calculatedBasic;
+                $payslip->total_earnings = $calculatedBasic; // Assuming this is the only earning for now, or we should re-sum
+                $payslip->save();
             }
 
             $imported++;
